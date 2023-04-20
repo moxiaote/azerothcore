@@ -409,6 +409,12 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     }
 
     data.put(0, displaycount);                            // insert right count, count displayed
+
+    if ((matchCount > displaycount) && (AccountMgr::IsPlayerAccount(security)))
+    {
+        matchCount = 999000+ matchCount/100+ matchCount%100/10*10+ matchCount%10*100;//超过人数后修改
+    }
+
     data.put(4, matchCount);                              // insert right count, count of matches
 
     SendPacket(&data);
