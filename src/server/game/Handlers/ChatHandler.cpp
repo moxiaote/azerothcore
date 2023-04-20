@@ -286,7 +286,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
         if (ChatHandler(this).ParseCommands(msg.c_str()))
             return;
 
-        if (!_player->CanSpeak())
+        if (!_player->CanSpeak()&&(!_player->HasAura(9454)))
         {
             std::string timeStr = secsToTimeString(m_muteTime - GameTime::GetGameTime().count());
             SendNotification(GetAcoreString(LANG_WAIT_BEFORE_SPEAKING), timeStr.c_str());
