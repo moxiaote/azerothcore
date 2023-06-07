@@ -1408,7 +1408,7 @@ public:
                 {
                     me->GetMotionMaster()->MovementExpired(false);
                     me->StopMoving();
-                    me->GetMotionMaster()->MoveCharge(_x, _y, me->GetPositionZ() + 60.0f, me->GetSpeed(MOVE_RUN));
+                    me->GetMotionMaster()->MoveCharge(_x, _y, _groundZ + 30.0f, me->GetSpeed(MOVE_RUN));
                 }
                 _events.RescheduleEvent(EVENT_CONTINUE_FALLING, 3s);
             }
