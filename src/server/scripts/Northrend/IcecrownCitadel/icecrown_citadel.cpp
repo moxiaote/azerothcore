@@ -1110,8 +1110,9 @@ public:
                 return;
 
             me->SetImmuneToAll(false);
-            me->SetCanFly(false);
-            me->SetDisableGravity(false);
+            //me->SetCanFly(false);
+            //me->SetDisableGravity(false);
+            //me->SetWalk(true);//修复下地动作
             me->SetReactState(REACT_AGGRESSIVE);
             DoZoneInCombat(nullptr, 150.0f);
         }
@@ -1161,11 +1162,14 @@ public:
                     Talk(SAY_SVALNA_AGGRO);
                     break;
                 case EVENT_IMPALING_SPEAR:
-                    if (Unit* target = SelectTarget(SelectTargetMethod::Random, 1, 0.0f, true, true, -SPELL_IMPALING_SPEAR))
+                    if (Unit* target = SelectTarget(SelectTargetMethod::Random, 1, 50.0f, true, true, -SPELL_IMPALING_SPEAR))//修改技能最远距离为50.0f
                     {
-                        DoCast(me, SPELL_AETHER_SHIELD);
-                        me->AddAura(70203, me);
-                        DoCast(target, SPELL_IMPALING_SPEAR);
+                        if (me->GetReactState() == REACT_AGGRESSIVE)//增加进入战斗检测
+                        {
+                            DoCast(me, SPELL_AETHER_SHIELD);
+                            me->AddAura(70203, me);
+                            DoCast(target, SPELL_IMPALING_SPEAR);
+                        }
                     }
                     events.ScheduleEvent(EVENT_IMPALING_SPEAR, 20s, 25s);
                     break;
