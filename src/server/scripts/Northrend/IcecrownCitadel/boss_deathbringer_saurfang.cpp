@@ -558,6 +558,25 @@ public:
                         for (std::list<Creature*>::iterator itr = _guardList.begin(); itr != _guardList.end(); ++itr)
                             (*itr)->AI()->SetData(0, x++);
 
+
+
+
+
+                        //LM Support
+                        if (_guardListLM.empty())
+                        {
+                            GetCreatureListWithEntryInGrid(_guardListLM, me, NPC_SE_SKYBREAKER_MARINE, 20.0f);
+                            _guardListLM.sort(Acore::ObjectDistanceOrderPred(me));
+                        }
+                        uint32 xLM = 1;
+                        for (std::list<Creature*>::iterator itr = _guardListLM.begin(); itr != _guardListLM.end(); ++itr)
+                            (*itr)->AI()->SetData(0, xLM++);
+                        //LM Support
+
+
+
+
+
                         me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
                         Talk(SAY_INTRO_HORDE_1);
                         _events.SetPhase(PHASE_INTRO_H);
@@ -584,6 +603,13 @@ public:
                         for (std::list<Creature*>::iterator itr = _guardList.begin(); itr != _guardList.end(); ++itr)
                             (*itr)->AI()->DoAction(ACTION_DESPAWN);
 
+
+                        //LM support
+                        for (std::list<Creature*>::iterator itr = _guardListLM.begin(); itr != _guardListLM.end(); ++itr)
+                            (*itr)->AI()->DoAction(ACTION_DESPAWN);
+                        //LM support
+
+
                         /*Talk(SAY_OUTRO_HORDE_1);
                         _events.ScheduleEvent(EVENT_OUTRO_HORDE_1, 10000);
                         _events.ScheduleEvent(EVENT_OUTRO_HORDE_2, 18000);
@@ -608,6 +634,20 @@ public:
                             (*itr)->SetDisableGravity(false);
                             (*itr)->AI()->EnterEvadeMode();
                         }
+
+
+                        //LM support
+                        for (std::list<Creature*>::iterator itr = _guardListLM.begin(); itr != _guardListLM.end(); ++itr)
+                        {
+                            (*itr)->GetMotionMaster()->Clear();
+                            (*itr)->GetHomePosition(x, y, z, o);
+                            (*itr)->SetPosition(x, y, z, o);
+                            (*itr)->StopMovingOnCurrentPos();
+                            (*itr)->SetDisableGravity(false);
+                            (*itr)->AI()->EnterEvadeMode();
+                        }
+                        //LM support
+
                     }
                     break;
                 default:
@@ -694,6 +734,13 @@ public:
                     Talk(SAY_INTRO_HORDE_8);
                     for (std::list<Creature*>::iterator itr = _guardList.begin(); itr != _guardList.end(); ++itr)
                         (*itr)->AI()->DoAction(ACTION_CHARGE);
+
+                    //LM support
+                    for (std::list<Creature*>::iterator itr = _guardListLM.begin(); itr != _guardListLM.end(); ++itr)
+                        (*itr)->AI()->DoAction(ACTION_CHARGE);
+                    //LM support
+
+
                     me->GetMotionMaster()->MoveCharge(chargePos[0].GetPositionX(), chargePos[0].GetPositionY(), chargePos[0].GetPositionZ(), 8.5f, POINT_CHARGE);
                     break;
                 case EVENT_INTRO_HORDE_9:
@@ -743,6 +790,7 @@ public:
         EventMap _events;
         InstanceScript* _instance;
         std::list<Creature*> _guardList;
+        std::list<Creature*> _guardListLM;
     };
 
     bool OnGossipHello(Player* player, Creature* creature) override
@@ -946,6 +994,7 @@ public:
                     {
                         deathbringer->AI()->DoAction(ACTION_INTRO_DONE);
                         deathbringer->SetImmuneToPC(false);
+                        me->SetImmuneToPC(true);
                         if (Player* target = deathbringer->SelectNearestPlayer(100.0f))
                             deathbringer->AI()->AttackStart(target);
                     }
@@ -1026,7 +1075,7 @@ public:
                 me->SetWalk(false);
                 me->GetMotionMaster()->MoveCharge(chargePos[_index].GetPositionX(), chargePos[_index].GetPositionY(), chargePos[_index].GetPositionZ(), 13.0f, POINT_CHARGE);
             }
-            else if (action == ACTION_DESPAWN)
+            if (action == ACTION_DESPAWN)
                 me->DespawnOrUnsummon(1);
         }
 
