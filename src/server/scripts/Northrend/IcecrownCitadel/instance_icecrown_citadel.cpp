@@ -118,7 +118,8 @@ DoorData const doorData[] =
 
 ObjectData const creatureData[] =
 {
-    { NPC_SINDRAGOSA, DATA_SINDRAGOSA }
+    { NPC_SINDRAGOSA, DATA_SINDRAGOSA },
+    { 0, 0 } // 崩溃提前修复
 };
 
 // this doesnt have to only store questgivers, also can be used for related quest spawns
