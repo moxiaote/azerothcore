@@ -214,6 +214,8 @@ public:
         {
             _JustDied();
             Talk(SAY_DEATH);
+            if (me->GetPositionZ() > 402)
+                me->GetMotionMaster()->MoveLand(POINT_GROUND, centerPos, 0.642857f * 7.0f);//修复上天阶段死亡无掉落
 
             if (Is25ManRaid() && me->HasAura(SPELL_SHADOWS_FATE))
                 DoCastAOE(SPELL_BLOOD_INFUSION_CREDIT, true);
