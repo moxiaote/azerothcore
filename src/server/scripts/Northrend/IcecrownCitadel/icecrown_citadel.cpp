@@ -1005,6 +1005,7 @@ public:
             me->SetCanFly(true);
             me->SetDisableGravity(true);
             me->SendMovementFlagUpdate();
+            canstart = false;
         }
 
         void JustDied(Unit* /*killer*/) override
@@ -1137,6 +1138,14 @@ public:
             }
         }
 
+        void DamageTaken(Unit*, uint32& damage, DamageEffectType, SpellSchoolMask) override
+        {
+            if (!canstart)
+            {
+                damage = 0;
+            }
+        }
+
         void UpdateAI(uint32 diff) override
         {
             if (!me->isActiveObject())
@@ -1157,6 +1166,7 @@ public:
                 case EVENT_SVALNA_RESURRECT:
                     Talk(SAY_SVALNA_RESURRECT_CAPTAINS);
                     me->CastSpell(me, SPELL_REVIVE_CHAMPION, false);
+                    canstart = true;
                     break;
                 case EVENT_SVALNA_COMBAT:
                     Talk(SAY_SVALNA_AGGRO);
@@ -1179,6 +1189,9 @@ public:
 
             DoMeleeAttackIfReady();
         }
+
+    private:
+        bool canstart;
     };
 
     CreatureAI* GetAI(Creature* creature) const override
