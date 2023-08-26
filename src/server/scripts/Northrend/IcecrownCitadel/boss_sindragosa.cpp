@@ -1740,8 +1740,8 @@ public:
                     sindragosa->AI()->DoAction(ACTION_START_FROSTWYRM);
                 else//增加检测重启后BOSS不存在刷新
                 {
-                    if (Creature* boss = player->GetMap()->SummonCreature(NPC_SINDRAGOSA, SindragosaSpawnPos))
-                        boss->AI()->DoAction(ACTION_START_FROSTWYRM);
+                    if (instance->GetBossState(DATA_SINDRAGOSA) == NOT_STARTED || instance->GetBossState(DATA_SINDRAGOSA) == TO_BE_DECIDED)//修复重启后已打过的再次召唤
+                        instance->SetData(DATA_SUMMON_SINDRAGOSA,0);
                 }
             }
         }
