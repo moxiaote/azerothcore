@@ -21,6 +21,7 @@
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "trial_of_the_crusader.h"
+#include "GameTime.h"
 
 std::map<uint32, bool> validDedicatedInsanityItems;
 
@@ -278,6 +279,7 @@ public:
             {
                 case TYPE_FAILED:
                     // - some scene here?
+                    ResetPlayerCooldown();//团灭后清除技能CD
                     if( instance->IsHeroic() && !CLEANED )
                     {
                         if( AttemptsLeft > 0 )
@@ -386,6 +388,8 @@ public:
                 case TYPE_NORTHREND_BEASTS_ALL:
                     if (data == DONE)
                     {
+                        ResetPlayerCooldown();//击杀后清除技能CD
+                        //StarLeaderpoint(true);//击杀后增加团长分数测试==================================================================================================================<<
                         northrendBeastsMask = 0;
                         EncounterStatus = NOT_STARTED;
                         InstanceProgress = INSTANCE_PROGRESS_BEASTS_DEAD;
@@ -401,6 +405,7 @@ public:
                         HandleGameObject(GO_EnterGateGUID, false);
                     else if( data == DONE )
                     {
+                        ResetPlayerCooldown();//击杀后清除技能CD
                         HandleGameObject(GO_EnterGateGUID, true);
                         InstanceProgress = INSTANCE_PROGRESS_JARAXXUS_DEAD;
                         events.RescheduleEvent(EVENT_SCENE_110, 2500);
@@ -445,6 +450,7 @@ public:
 
                                 if (GameObject* go = c->SummonGameObject(cacheEntry, Locs[LOC_CENTER].GetPositionX(), Locs[LOC_CENTER].GetPositionY(), Locs[LOC_CENTER].GetPositionZ(), Locs[LOC_CENTER].GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 630000000))
                                 {
+                                    ResetPlayerCooldown();//击杀后清除技能CD
                                     go->SetLootRecipient(instance);
                                 }
                             }
@@ -487,6 +493,7 @@ public:
                 case TYPE_VALKYR:
                     if( data == DONE && ++Counter >= 2 )
                     {
+                        ResetPlayerCooldown();//击杀后清除技能CD
                         Counter = 0;
                         EncounterStatus = NOT_STARTED;
                         InstanceProgress = INSTANCE_PROGRESS_VALKYR_DEAD;
@@ -505,6 +512,8 @@ public:
                     }
                     else if( data == DONE )
                     {
+                        ResetPlayerCooldown();//击杀后清除技能CD
+                        //StarLeaderpoint(true);//击杀后增加团长分数测试==================================================================================================================<<
                         Counter = 0;
                         EncounterStatus = NOT_STARTED;
                         InstanceProgress = INSTANCE_PROGRESS_DONE;
@@ -525,6 +534,89 @@ public:
                     break;
             }
         }
+
+        void ResetPlayerCooldown()//重置玩家技能
+        {
+            Map::PlayerList const& players = instance->GetPlayers();
+            if (!players.IsEmpty())
+                for (Map::PlayerList::const_iterator itrp = players.begin(); itrp != players.end(); ++itrp)
+                {
+                    if (Player* player = itrp->GetSource())
+                    {
+                        player->RemoveAura(57723);//移除英勇debuff
+                        player->RemoveAura(32182);//移除英勇
+                        player->RemoveAura(57724);//移除嗜血debuff
+                        player->RemoveAura(2825);//移除嗜血
+                        player->RemoveAura(25771);//移除自律debuff
+
+                        uint32 infTime = GameTime::GetGameTimeMS().count() + infinityCooldownDelayCheck;
+                        SpellCooldowns::iterator itr, next;
+
+                        for (itr = player->GetSpellCooldownMap().begin(); itr != player->GetSpellCooldownMap().end(); itr = next)
+                        {
+                            next = itr;
+                            ++next;
+                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                            if (!spellInfo)
+                                continue;
+
+                            // Get correct spell cooldown times
+                            uint32 remainingCooldown = player->GetSpellCooldownDelay(spellInfo->Id);
+                            int32 totalCooldown = spellInfo->RecoveryTime;
+                            int32 categoryCooldown = spellInfo->CategoryRecoveryTime;
+                            player->ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, totalCooldown, nullptr);
+                            if (int32 cooldownMod = player->GetTotalAuraModifier(SPELL_AURA_MOD_COOLDOWN))
+                                totalCooldown += cooldownMod * IN_MILLISECONDS;
+
+                            if (!spellInfo->HasAttribute(SPELL_ATTR6_NO_CATEGORY_COOLDOWN_MODS))
+                                player->ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, categoryCooldown, nullptr);
+
+                            // Clear cooldown if < 10min & (passed time > 30sec)
+                            if (remainingCooldown > 0
+                                && itr->second.end < infTime
+                                && totalCooldown <= 30 * MINUTE * IN_MILLISECONDS
+                                && categoryCooldown <= 30 * MINUTE * IN_MILLISECONDS
+                                && remainingCooldown <= 30 * MINUTE * IN_MILLISECONDS
+                                )
+                                player->RemoveSpellCooldown(itr->first, true);
+                        }
+                    }
+                }
+        }
+
+        void StarLeaderpoint(bool rankleader)//团长计分
+        {
+            Map::PlayerList const& players = instance->GetPlayers();
+            if (!players.IsEmpty())//检测玩家列表
+                if (Player* player = players.begin()->GetSource())
+                {
+                    if (player->GetGroup())//队伍检测
+                    {
+                        Player* leader = player->GetGroup()->GetLeader();//获取队长
+                        int point = 1;
+                        int diff = 0;
+
+                        if (leader->GetMap()->Is25ManRaid())
+                        {
+                            point = 3;
+                            diff += 1;
+                        }
+                        if (leader->GetMap()->IsHeroic())
+                        {
+                            point = point * 2;
+                            diff += 2;
+                        }
+                        //leader->GetGUID().GetCounter()
+                        QueryResult result = CharacterDatabase.Query("INSERT INTO _star_instance (accid, name, instance, diff, point) VALUES ({}, '{}', {}, {}, {})", leader->GetSession()->GetAccountId(), leader->GetName().c_str(), leader->GetInstanceId(), diff, point);
+                        ChatHandler(leader->GetSession()).PSendSysMessage("[星团长] |cff00CC00BOSS击杀完成,增加星团长点数%d.|r", point);
+                        //下一步增加查分
+                        if (rankleader)
+                            leader->SummonCreature(80032, 678.624f, 135.0f, 142.127f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 300000);//开团结算NPC
+                    }
+                }
+
+        }
+
 
         uint32 GetData(uint32 type) const override
         {
