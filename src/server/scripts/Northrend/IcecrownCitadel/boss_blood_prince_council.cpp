@@ -239,10 +239,19 @@ public:
             bool valid = true;
             if (Creature* keleseth = instance->instance->GetCreature(instance->GetGuidData(DATA_PRINCE_KELESETH_GUID)))
                 if (!keleseth->IsAlive() || keleseth->IsInEvadeMode())
+                {
                     valid = false;
+                    if (!keleseth->IsAlive())
+                        keleseth->Respawn();
+                }
+
             if (Creature* taldaram = instance->instance->GetCreature(instance->GetGuidData(DATA_PRINCE_TALDARAM_GUID)))
                 if (!taldaram->IsAlive() || taldaram->IsInEvadeMode())
+                {
                     valid = false;
+                    if (!taldaram->IsAlive())
+                        taldaram->Respawn();
+                }
             if (Creature* valanar = instance->instance->GetCreature(instance->GetGuidData(DATA_PRINCE_VALANAR_GUID)))
                 if (!valanar->IsAlive() || valanar->IsInEvadeMode())
                     valid = false;
@@ -499,10 +508,19 @@ public:
             bool valid = true;
             if (Creature* keleseth = instance->instance->GetCreature(instance->GetGuidData(DATA_PRINCE_KELESETH_GUID)))
                 if (!keleseth->IsAlive() || keleseth->IsInEvadeMode())
+                {
                     valid = false;
+                    if (!keleseth->IsAlive())
+                        keleseth->Respawn();
+                }
+
             if (Creature* taldaram = instance->instance->GetCreature(instance->GetGuidData(DATA_PRINCE_TALDARAM_GUID)))
                 if (!taldaram->IsAlive() || taldaram->IsInEvadeMode())
+                {
                     valid = false;
+                    if (!taldaram->IsAlive())
+                        taldaram->Respawn();
+                }
             if (Creature* valanar = instance->instance->GetCreature(instance->GetGuidData(DATA_PRINCE_VALANAR_GUID)))
                 if (!valanar->IsAlive() || valanar->IsInEvadeMode())
                     valid = false;
@@ -784,10 +802,19 @@ public:
             bool valid = true;
             if (Creature* keleseth = instance->instance->GetCreature(instance->GetGuidData(DATA_PRINCE_KELESETH_GUID)))
                 if (!keleseth->IsAlive() || keleseth->IsInEvadeMode())
+                {
                     valid = false;
+                    if (!keleseth->IsAlive())
+                        keleseth->Respawn();
+                }
+
             if (Creature* taldaram = instance->instance->GetCreature(instance->GetGuidData(DATA_PRINCE_TALDARAM_GUID)))
                 if (!taldaram->IsAlive() || taldaram->IsInEvadeMode())
+                {
                     valid = false;
+                    if (!taldaram->IsAlive())
+                        taldaram->Respawn();
+                }
             if (Creature* valanar = instance->instance->GetCreature(instance->GetGuidData(DATA_PRINCE_VALANAR_GUID)))
                 if (!valanar->IsAlive() || valanar->IsInEvadeMode())
                     valid = false;
@@ -853,6 +880,7 @@ public:
 
             Talk(SAY_VALANAR_DEATH);
             instance->SetBossState(DATA_BLOOD_PRINCE_COUNCIL, DONE);
+            instance->SaveToDB();//增加保存选项
             if (Creature* keleseth = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_PRINCE_KELESETH_GUID)))
                 if (keleseth->IsAlive())
                     Unit::Kill(keleseth, keleseth);
