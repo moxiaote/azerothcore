@@ -982,9 +982,12 @@ public:
                     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                         if (Player* player = itr->GetSource())
                             if (player->GetPositionZ() < 700.0f)
-                                //救赎之魂fix
-                                if (!player->HasAura(27792))
+                            {//救赎之魂fix
+                                if (player->HasAura(27827))
+                                    player->RemoveAura(27827);
+                                else if (player->IsAlive())
                                     Unit::Kill(me, player);
+                            }
             }
             else
                 _positionCheckTimer -= diff;
