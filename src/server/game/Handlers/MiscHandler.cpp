@@ -1450,6 +1450,13 @@ void WorldSession::HandleSetRaidDifficultyOpcode(WorldPacket& recv_data)
                 return;
             }
 
+            if (group->isRollLootActive())
+            {
+                ChatHandler(this).PSendSysMessage("装备分配中, 请稍后再试.");
+                _player->SendRaidDifficulty(group != nullptr);
+                return;
+            }
+
             for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 Player* groupGuy = itr->GetSource();
