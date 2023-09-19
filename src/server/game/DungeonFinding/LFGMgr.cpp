@@ -2130,7 +2130,7 @@ namespace lfg
 
         if (out)
         {
-            if (player->GetMapId() == uint32(dungeon->map))
+            if ((player->GetMapId() == uint32(dungeon->map)) && (!group->isRollLootActive()))//增加拾取检测防止装备丢失
                 player->TeleportToEntryPoint();
 
             return;
@@ -2278,7 +2278,15 @@ namespace lfg
 
             // if we can take the quest, means that we haven't done this kind of "run", IE: First Heroic Random of Day.
             if (player->CanRewardQuest(quest, false))
+            {
+                if (player->HasTankSpec() or player->HasHealSpec())
+                {
+                    player->AddItem(54218, 1);//T/N奖励额外兰德鲁的礼物盒
+                    player->AddItem(49426, 1);//T/N奖励额外兰德鲁的礼物盒
+                    player->SendSystemMessage("坦克奶妈额外奖励已发放-兰德鲁的礼物盒*1-寒冰纹章*1");
+                }
                 player->RewardQuest(quest, 0, nullptr, false, true);
+            }
             else
             {
                 done = true;
@@ -2286,6 +2294,11 @@ namespace lfg
                 if (!quest)
                     continue;
                 // we give reward without informing client (retail does this)
+                if (player->HasTankSpec() or player->HasHealSpec())
+                {
+                    player->AddItem(47241, 2);//T/N奖励额外牌子
+                    player->SendSystemMessage("坦克奶妈额外奖励已发放-凯旋纹章*2");
+                }
                 player->RewardQuest(quest, 0, nullptr, false, true);
             }
 
