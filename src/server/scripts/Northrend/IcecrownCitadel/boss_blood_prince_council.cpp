@@ -141,6 +141,7 @@ enum Actions
     ACTION_REMOVE_INVOCATION    = 3,
     ACTION_FLAME_BALL_CHASE     = 4,
     ACTION_KINETIC_BOMB_JUMP    = 5,
+    ACTION_DIE                  = 6,
 };
 
 enum Points
@@ -313,10 +314,10 @@ public:
             Talk(SAY_KELESETH_DEATH);
             if (Creature* taldaram = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_PRINCE_TALDARAM_GUID)))
                 if (taldaram->IsAlive())
-                    Unit::Kill(taldaram, taldaram);
+                    taldaram->AI()->DoAction(ACTION_DIE);
             if (Creature* valanar = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_PRINCE_VALANAR_GUID)))
                 if (valanar->IsAlive())
-                    Unit::Kill(valanar, valanar);
+                    valanar->AI()->DoAction(ACTION_DIE);
         }
 
         void JustRespawned() override
@@ -374,6 +375,12 @@ public:
         {
             switch (action)
             {
+                //增加击杀Action防止卡BUG
+                case ACTION_DIE:
+                    _canDie = true;
+                    if (me->IsAlive())
+                        Unit::Kill(me, me, false);
+                    break;
                 case ACTION_STAND_UP:
                     summons.DespawnEntry(WORLD_TRIGGER);
                     me->RemoveUnitFlag(UNIT_FLAG_PREVENT_EMOTES_FROM_CHAT_TEXT | UNIT_FLAG_NOT_SELECTABLE);
@@ -577,10 +584,10 @@ public:
             Talk(EMOTE_TALDARAM_DEATH);
             if (Creature* keleseth = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_PRINCE_KELESETH_GUID)))
                 if (keleseth->IsAlive())
-                    Unit::Kill(keleseth, keleseth);
+                    keleseth->AI()->DoAction(ACTION_DIE);
             if (Creature* valanar = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_PRINCE_VALANAR_GUID)))
                 if (valanar->IsAlive())
-                    Unit::Kill(valanar, valanar);
+                    valanar->AI()->DoAction(ACTION_DIE);
         }
 
         void JustRespawned() override
@@ -653,6 +660,12 @@ public:
         {
             switch (action)
             {
+                //增加击杀Action防止卡BUG
+                case ACTION_DIE:
+                    _canDie = true;
+                    if (me->IsAlive())
+                        Unit::Kill(me, me, false);
+                    break;
                 case ACTION_STAND_UP:
                     summons.DespawnEntry(WORLD_TRIGGER);
                     me->RemoveUnitFlag(UNIT_FLAG_PREVENT_EMOTES_FROM_CHAT_TEXT | UNIT_FLAG_NOT_SELECTABLE);
@@ -883,10 +896,10 @@ public:
             instance->SaveToDB();//增加保存选项
             if (Creature* keleseth = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_PRINCE_KELESETH_GUID)))
                 if (keleseth->IsAlive())
-                    Unit::Kill(keleseth, keleseth);
+                    keleseth->AI()->DoAction(ACTION_DIE);
             if (Creature* taldaram = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_PRINCE_TALDARAM_GUID)))
                 if (taldaram->IsAlive())
-                    Unit::Kill(taldaram, taldaram);
+                    taldaram->AI()->DoAction(ACTION_DIE);
         }
 
         void JustRespawned() override
@@ -957,6 +970,12 @@ public:
         {
             switch (action)
             {
+                //增加击杀Action防止卡BUG
+                case ACTION_DIE:
+                    _canDie = true;
+                    if (me->IsAlive())
+                        Unit::Kill(me, me, false);
+                    break;
                 case ACTION_STAND_UP:
                     summons.DespawnEntry(WORLD_TRIGGER);
                     me->RemoveUnitFlag(UNIT_FLAG_PREVENT_EMOTES_FROM_CHAT_TEXT | UNIT_FLAG_NOT_SELECTABLE);
