@@ -221,7 +221,7 @@ public:
             BossAI::Reset();
             me->RemoveAurasDueToSpell(SPELL_TWILIGHT_PHASING);
             me->CastSpell(me, SPELL_CLEAR_DEBUFFS, false);
-
+            me->SetHealth(me->GetMaxHealth());
             me->SetVisible(false);
             me->SetReactState(REACT_PASSIVE);
             _events2.Reset();
