@@ -328,6 +328,26 @@ public:
             if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_HALION_CONTROLLER)))
                 if (controller->IsAlive())
                     Unit::Kill(controller, controller);
+
+            //增加击杀奖励
+            Map::PlayerList const& players = me->GetMap()->GetPlayers();
+            if (!players.IsEmpty())//检测玩家列表
+                if (Player* player = players.begin()->GetSource())
+                {
+                    if (player->GetGroup())//队伍检测
+                    {
+                        Player* leader = player->GetGroup()->GetLeader();//获取队长
+                        int point = 1;
+
+                        if (leader->GetMap()->Is25ManRaid())
+                        {
+                            point = 3;
+                        }
+                        //leader->GetGUID().GetCounter()
+                        leader->AddItem(43949, point);
+                        ChatHandler(leader->GetSession()).PSendSysMessage("[星团长] |cff00CC00BOSS击杀完成,增加团长积分%d.|r", point);
+                    }
+                }
         }
 
         void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType, SpellSchoolMask) override

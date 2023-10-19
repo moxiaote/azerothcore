@@ -1126,6 +1126,7 @@ public:
                     switch (state)
                     {
                         case DONE:
+                            StarLeaderpoint();//击杀后增加团长分数
                             if (GameObject* loot = instance->GetGameObject(DeathbringersCacheGUID))
                             {
                                 if (Creature* deathbringer = instance->GetCreature(DeathbringerSaurfangGUID))
@@ -1189,6 +1190,7 @@ public:
                     break;
                 case DATA_VALITHRIA_DREAMWALKER:
                     if (state == DONE)
+                        StarLeaderpoint();//击杀后增加团长分数
                         SetData(DATA_WEEKLY_QUEST_ID, GetData(DATA_WEEKLY_QUEST_ID)); // will show weekly quest npc if necessary
                     break;
                 case DATA_SINDRAGOSA:
@@ -1232,6 +1234,7 @@ public:
 
                         if (state == DONE)
                         {
+                            StarLeaderpoint();//击杀后增加团长分数
                             if (GameObject* bolvar = instance->GetGameObject(FrozenBolvarGUID))
                                 bolvar->SetRespawnTime(7 * DAY);
                             if (GameObject* pillars = instance->GetGameObject(PillarsChainedGUID))
@@ -1304,6 +1307,29 @@ public:
                         }
                     }
                 }
+        }
+
+        void StarLeaderpoint()//团长计分
+        {
+            Map::PlayerList const& players = instance->GetPlayers();
+            if (!players.IsEmpty())//检测玩家列表
+                if (Player* player = players.begin()->GetSource())
+                {
+                    if (player->GetGroup())//队伍检测
+                    {
+                        Player* leader = player->GetGroup()->GetLeader();//获取队长
+                        int point = 1;
+
+                        if (leader->GetMap()->Is25ManRaid())
+                        {
+                            point = 4;
+                        }
+                        //leader->GetGUID().GetCounter()
+                        leader->AddItem(43949, point);
+                        ChatHandler(leader->GetSession()).PSendSysMessage("[星团长] |cff00CC00BOSS击杀完成,增加团长积分%d.|r", point);
+                    }
+                }
+
         }
 
         void SpawnGunship()

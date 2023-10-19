@@ -389,7 +389,6 @@ public:
                     if (data == DONE)
                     {
                         ResetPlayerCooldown();//击杀后清除技能CD
-                        //StarLeaderpoint(true);//击杀后增加团长分数测试==================================================================================================================<<
                         northrendBeastsMask = 0;
                         EncounterStatus = NOT_STARTED;
                         InstanceProgress = INSTANCE_PROGRESS_BEASTS_DEAD;
@@ -513,7 +512,7 @@ public:
                     else if( data == DONE )
                     {
                         ResetPlayerCooldown();//击杀后清除技能CD
-                        //StarLeaderpoint(true);//击杀后增加团长分数测试==================================================================================================================<<
+                        StarLeaderpoint();//击杀后增加团长分数
                         Counter = 0;
                         EncounterStatus = NOT_STARTED;
                         InstanceProgress = INSTANCE_PROGRESS_DONE;
@@ -584,7 +583,7 @@ public:
                 }
         }
 
-        void StarLeaderpoint(bool rankleader)//团长计分
+        void StarLeaderpoint()//团长计分
         {
             Map::PlayerList const& players = instance->GetPlayers();
             if (!players.IsEmpty())//检测玩家列表
@@ -594,24 +593,18 @@ public:
                     {
                         Player* leader = player->GetGroup()->GetLeader();//获取队长
                         int point = 1;
-                        int diff = 0;
 
                         if (leader->GetMap()->Is25ManRaid())
                         {
                             point = 3;
-                            diff += 1;
                         }
                         if (leader->GetMap()->IsHeroic())
                         {
                             point = point * 2;
-                            diff += 2;
                         }
                         //leader->GetGUID().GetCounter()
-                        QueryResult result = CharacterDatabase.Query("INSERT INTO _star_instance (accid, name, instance, diff, point) VALUES ({}, '{}', {}, {}, {})", leader->GetSession()->GetAccountId(), leader->GetName().c_str(), leader->GetInstanceId(), diff, point);
-                        ChatHandler(leader->GetSession()).PSendSysMessage("[星团长] |cff00CC00BOSS击杀完成,增加星团长点数%d.|r", point);
-                        //下一步增加查分
-                        if (rankleader)
-                            leader->SummonCreature(80032, 678.624f, 135.0f, 142.127f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 300000);//开团结算NPC
+                        leader->AddItem(43949, point);
+                        ChatHandler(leader->GetSession()).PSendSysMessage("[星团长] |cff00CC00BOSS击杀完成,增加团长积分%d.|r", point);
                     }
                 }
 
