@@ -597,10 +597,8 @@ public:
                         if (leader->GetMap()->Is25ManRaid())
                         {
                             point = 3;
-                        }
-                        if (leader->GetMap()->IsHeroic())
-                        {
-                            point = point * 2;
+                            if (leader->GetMap()->IsHeroic())
+                                point = 4;
                         }
                         //leader->GetGUID().GetCounter()
                         leader->AddItem(43949, point);
