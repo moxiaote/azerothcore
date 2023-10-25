@@ -1104,11 +1104,15 @@ public:
                         if (GameObject* transporter = instance->GetGameObject(ScourgeTransporterFirstGUID))
                             transporter->RemoveGameObjectFlag(GO_FLAG_NOT_SELECTABLE);
                         SaveToDB();
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
                     }
                     break;
                 case DATA_LADY_DEATHWHISPER:
                     if (state == DONE)
+                    {
                         SpawnGunship();
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
+                    }
                     break;
                 case DATA_ICECROWN_GUNSHIP_BATTLE:
                     if (state == DONE)
@@ -1118,6 +1122,7 @@ public:
                             loot->SetLootRecipient(instance);
                             loot->RemoveGameObjectFlag(GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE | GO_FLAG_NODESPAWN);
                         }
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
                     }
                     else if (state == FAIL)
                         Events.ScheduleEvent(EVENT_RESPAWN_GUNSHIP, 30s);
@@ -1126,7 +1131,7 @@ public:
                     switch (state)
                     {
                         case DONE:
-                            StarLeaderpoint(false);//击杀后增加团长分数
+                            StarLeaderpoint(false, 1);//击杀后增加团长分数
                             if (GameObject* loot = instance->GetGameObject(DeathbringersCacheGUID))
                             {
                                 if (Creature* deathbringer = instance->GetCreature(DeathbringerSaurfangGUID))
@@ -1152,6 +1157,7 @@ public:
                             go->RemoveGameObjectFlag(GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
                         if (GetBossState(DATA_ROTFACE) == DONE)
                             HandleDropAttempt(false);
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
                     }
                     break;
                 case DATA_ROTFACE:
@@ -1161,13 +1167,17 @@ public:
                             go->RemoveGameObjectFlag(GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
                         if (GetBossState(DATA_FESTERGUT) == DONE)
                             HandleDropAttempt(false);
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
                     }
                     break;
                 case DATA_PROFESSOR_PUTRICIDE:
                     HandleGameObject(PutricideEnteranceDoorGUID, (PutricideEventProgress & PUTRICIDE_EVENT_FLAG_TRAP_FINISHED) && state != IN_PROGRESS);
                     HandleGameObject(PlagueSigilGUID, state != DONE);
                     if (state == DONE)
+                    {
                         CheckLichKingAvailability();
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
+                    }
                     else if (state == FAIL)
                         HandleDropAttempt();
                     if (state == DONE && !instance->IsHeroic() && LichKingHeroicAvailable)
@@ -1179,7 +1189,10 @@ public:
                 case DATA_BLOOD_QUEEN_LANA_THEL:
                     HandleGameObject(BloodwingSigilGUID, state != DONE);
                     if (state == DONE)
+                    {
                         CheckLichKingAvailability();
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
+                    }
                     else if (state == FAIL)
                         HandleDropAttempt();
                     if (state == DONE && !instance->IsHeroic() && LichKingHeroicAvailable)
@@ -1190,13 +1203,18 @@ public:
                     break;
                 case DATA_VALITHRIA_DREAMWALKER:
                     if (state == DONE)
-                        StarLeaderpoint(true);//击杀后增加团长分数
+                    {
+                        StarLeaderpoint(true, 2);//击杀后增加团长分数
                         SetData(DATA_WEEKLY_QUEST_ID, GetData(DATA_WEEKLY_QUEST_ID)); // will show weekly quest npc if necessary
+                    }
                     break;
                 case DATA_SINDRAGOSA:
                     HandleGameObject(FrostwingSigilGUID, state != DONE);
                     if (state == DONE)
+                    {
                         CheckLichKingAvailability();
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
+                    }
                     else if (state == FAIL)
                     {
                         IsSindragosaIntroDone = true;
@@ -1234,7 +1252,7 @@ public:
 
                         if (state == DONE)
                         {
-                            StarLeaderpoint(false);//击杀后增加团长分数
+                            StarLeaderpoint(false,1);//击杀后增加团长分数
                             if (GameObject* bolvar = instance->GetGameObject(FrozenBolvarGUID))
                                 bolvar->SetRespawnTime(7 * DAY);
                             if (GameObject* pillars = instance->GetGameObject(PillarsChainedGUID))
@@ -1309,7 +1327,7 @@ public:
                 }
         }
 
-        void StarLeaderpoint(bool VALITHRIA_DREAMWALKER)//团长计分
+        void StarLeaderpoint(bool NO10MANPOINTBOSS,int ADD25POINT)//团长计分
         {
             Map::PlayerList const& players = instance->GetPlayers();
             if (!players.IsEmpty())//检测玩家列表
@@ -1320,13 +1338,13 @@ public:
                         Player* leader = player->GetGroup()->GetLeader();//获取队长
                         int point = 1;
 
-                        if (leader->GetMap()->Is25ManRaid())
+                        if (player->GetMap()->Is25ManRaid())
                         {
-                            point = 4;
+                            point = ADD25POINT;
                         }
                         else
                         {
-                            if (VALITHRIA_DREAMWALKER)
+                            if (NO10MANPOINTBOSS)
                                 point = 0;
                         }
 

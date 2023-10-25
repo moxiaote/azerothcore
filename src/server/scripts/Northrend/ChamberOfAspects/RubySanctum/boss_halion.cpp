@@ -339,10 +339,10 @@ public:
                         Player* leader = player->GetGroup()->GetLeader();//获取队长
                         int point = 1;
 
-                        if (leader->GetMap()->Is25ManRaid())
+                        if (player->GetMap()->Is25ManRaid())
                         {
                             point = 3;
-                            if (leader->GetMap()->IsHeroic())
+                            if (player->GetMap()->IsHeroic())
                                 point = 4;
                         }
                         //leader->GetGUID().GetCounter()
