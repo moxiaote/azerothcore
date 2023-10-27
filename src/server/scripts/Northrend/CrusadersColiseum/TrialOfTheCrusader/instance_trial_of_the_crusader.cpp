@@ -1442,9 +1442,9 @@ public:
                             uint32 tributeChest = 0;
                             if( instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC )
                             {
-                                if (AttemptsLeft >= 50)
+                                if (AttemptsLeft >= 45)//为照顾玩家,降低50箱子难度
                                     tributeChest = GO_TRIBUTE_CHEST_10H_99;
-                                else if (AttemptsLeft >= 45)
+                                else if (AttemptsLeft >= 40)//为照顾玩家,降低45箱子难度
                                     tributeChest = GO_TRIBUTE_CHEST_10H_50;
                                 else if (AttemptsLeft >= 25)
                                     tributeChest = GO_TRIBUTE_CHEST_10H_45;
@@ -1453,9 +1453,9 @@ public:
                             }
                             else if( instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC )
                             {
-                                if (AttemptsLeft >= 50)
+                                if (AttemptsLeft >= 45)//为照顾玩家,降低50箱子难度
                                     tributeChest = GO_TRIBUTE_CHEST_25H_99;
-                                else if (AttemptsLeft >= 45)
+                                else if (AttemptsLeft >= 40)//为照顾玩家,降低45箱子难度
                                     tributeChest = GO_TRIBUTE_CHEST_25H_50;
                                 else if (AttemptsLeft >= 25)
                                     tributeChest = GO_TRIBUTE_CHEST_25H_45;
