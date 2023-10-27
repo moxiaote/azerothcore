@@ -21,7 +21,6 @@
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "trial_of_the_crusader.h"
-#include "GameTime.h"
 
 std::map<uint32, bool> validDedicatedInsanityItems;
 

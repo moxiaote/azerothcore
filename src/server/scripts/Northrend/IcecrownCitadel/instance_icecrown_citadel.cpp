@@ -1283,7 +1283,7 @@ public:
                 {
                     if (Player* player = itrp->GetSource())
                     {
-                        if (failed && player->IsAlive() && !player->HasAura(19753) && !player->HasAura(5384) && !player->HasAura(32612) && !player->HasAura(642) && !player->HasAura(27827))//检查是否灭团
+                        if (failed && player->IsAlive() && !player->HasAura(19753) && !player->HasAura(5384) && !player->HasAura(32612) && !player->HasAura(642) && !player->HasAura(27827) && !player->HasAura(70157) && !player->HasAura(71289))//检查是否灭团
                             return;
                         player->RemoveAura(57723);//移除英勇debuff
                         player->RemoveAura(32182);//移除英勇
