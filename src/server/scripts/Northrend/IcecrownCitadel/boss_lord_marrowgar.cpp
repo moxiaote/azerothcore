@@ -216,7 +216,7 @@ public:
                         break;
                     }
                     events.Repeat(5s);
-                    Unit* unit = SelectTarget(SelectTargetMethod::Random, 0, BoneStormMoveTargetSelector(me));
+                    Unit* unit = SelectTarget(SelectTargetMethod::MaxDistance, 0, BoneStormMoveTargetSelector(me));//修改为白骨风暴点最远目标
                     if (!unit)
                     {
                         if ((unit = SelectTarget(SelectTargetMethod::MaxThreat, 0, 175.0f, true)))
