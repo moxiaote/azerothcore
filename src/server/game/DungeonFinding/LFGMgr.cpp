@@ -2277,6 +2277,9 @@ namespace lfg
                 continue;
 
             // if we can take the quest, means that we haven't done this kind of "run", IE: First Heroic Random of Day.
+            if (player->IsInWorld())//增加在线检测
+            {
+
             if (player->CanRewardQuest(quest, false))
             {
                 if (player->HasTankSpec() or player->HasHealSpec())
@@ -2300,6 +2303,8 @@ namespace lfg
                     player->SendSystemMessage("坦克奶妈额外奖励已发放-凯旋纹章*2");
                 }
                 player->RewardQuest(quest, 0, nullptr, false, true);
+            }
+
             }
 
             // Give rewards
