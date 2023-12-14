@@ -396,8 +396,11 @@ public:
                                 point = 4;
                         }
                         //leader->GetGUID().GetCounter()
-                        leader->AddItem(43949, point);
-                        ChatHandler(leader->GetSession()).PSendSysMessage("[星团长] |cff00CC00BOSS击杀完成,增加团长积分%d.|r", point);
+                        if (leader->IsInWorld())//检测团长是否掉线
+                        {
+                            leader->AddItem(43949, point);
+                            ChatHandler(leader->GetSession()).PSendSysMessage("[星团长] |cff00CC00BOSS击杀完成,增加团长积分%d.|r", point);
+                        }
                     }
                 }
         }
