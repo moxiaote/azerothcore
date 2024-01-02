@@ -16,14 +16,13 @@
  */
 
 #include "SmartAI.h"
+#include "AreaTriggerScript.h"
 #include "CellImpl.h"
 #include "GridDefines.h"
 #include "GridNotifiers.h"
-#include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "ObjectDefines.h"
 #include "ObjectMgr.h"
-#include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "SpellMgr.h"
 #include "Vehicle.h"
@@ -602,7 +601,7 @@ void SmartAI::MovepointReached(uint32 id)
     if (mLastWP)
     {
         me->SetPosition(mLastWP->x, mLastWP->y, mLastWP->z, me->GetOrientation());
-        me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
+        me->SetHomePosition(me->GetPosition());
     }
 
     if (HasEscortState(SMART_ESCORT_PAUSED))
@@ -816,6 +815,11 @@ void SmartAI::JustSummoned(Creature* creature)
 void SmartAI::SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_SUMMONED_UNIT_DIES, summon);
+}
+
+void SmartAI::SummonedCreatureEvade(Creature* summon)
+{
+    GetScript()->ProcessEventsFor(SMART_EVENT_SUMMONED_UNIT_EVADE, summon);
 }
 
 void SmartAI::AttackStart(Unit* who)
@@ -1135,6 +1139,11 @@ void SmartAI::OnSpellClick(Unit* clicker, bool&  /*result*/)
 void SmartGameObjectAI::SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_SUMMONED_UNIT_DIES, summon);
+}
+
+void SmartGameObjectAI::SummonedCreatureEvade(Creature* summon)
+{
+    GetScript()->ProcessEventsFor(SMART_EVENT_SUMMONED_UNIT_EVADE, summon);
 }
 
 void SmartGameObjectAI::UpdateAI(uint32 diff)

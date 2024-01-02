@@ -15,12 +15,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AchievementCriteriaScript.h"
+#include "AreaTriggerScript.h"
+#include "CreatureScript.h"
 #include "GameTime.h"
 #include "GridNotifiers.h"
 #include "ObjectMgr.h"
 #include "Player.h"
-#include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "SpellScriptLoader.h"
 #include "icecrown_citadel.h"
 
 enum Texts
@@ -282,7 +285,6 @@ public:
 
         void Reset() override
         {
-            _didFirstFlyPhase = false;
             _isBelow20Pct = false;
             _isThirdPhase = false;
             _isLanding = false;
@@ -325,7 +327,6 @@ public:
                 return;
             }
 
-            _didFirstFlyPhase = false;
             _isBelow20Pct = false;
             _isThirdPhase = false;
             _bombCount = 0;
@@ -452,9 +453,6 @@ public:
         void DamageTaken(Unit*, uint32& damage, DamageEffectType, SpellSchoolMask) override
         {
             if (!damage || me->IsInEvadeMode())
-                return;
-
-            if (!_didFirstFlyPhase)
                 return;
 
             if (!_isThirdPhase)
@@ -600,7 +598,6 @@ public:
                     }
 
                     _isInAirPhase = true;
-                    _didFirstFlyPhase = true;
                     Talk(SAY_AIR_PHASE);
                     me->SetReactState(REACT_PASSIVE);
                     me->SetSpeed(MOVE_RUN, 4.28571f);
@@ -696,7 +693,6 @@ public:
     private:
         uint8 _bombCount;
         uint8 _mysticBuffetStack;
-        bool _didFirstFlyPhase;
         bool _isBelow20Pct;
         bool _isThirdPhase;
         bool _isInAirPhase;

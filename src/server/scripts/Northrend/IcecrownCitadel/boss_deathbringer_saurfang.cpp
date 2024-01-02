@@ -15,12 +15,14 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AchievementCriteriaScript.h"
+#include "CreatureScript.h"
 #include "ObjectMgr.h"
 #include "Player.h"
-#include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "ScriptedGossip.h"
 #include "SpellAuras.h"
+#include "SpellScriptLoader.h"
 #include "icecrown_citadel.h"
 
 enum ScriptTexts
@@ -729,21 +731,21 @@ public:
                         _events.ScheduleEvent(EVENT_INTRO_HORDE_9, 48s + 200ms, 0, PHASE_INTRO_H);
                         _events.ScheduleEvent(EVENT_INTRO_FINISH, 56s + 700ms, 0, PHASE_INTRO_H);
                         break;
-                        /*case POINT_CORPSE:
-                            if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
-                            {
-                                deathbringer->CastSpell(me, SPELL_RIDE_VEHICLE, true);
-                                deathbringer->SetUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
-                                deathbringer->setDeathState(ALIVE);
-                            }
-                            _events.ScheduleEvent(EVENT_OUTRO_HORDE_4, 1000);
-                            _events.ScheduleEvent(EVENT_OUTRO_HORDE_5, 4000);
-                            break;
-                        case POINT_FINAL:
-                            if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
-                                deathbringer->DespawnOrUnsummon();
-                            me->DespawnOrUnsummon();
-                            break;*/
+                    /*case POINT_CORPSE:
+                        if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
+                        {
+                            deathbringer->CastSpell(me, SPELL_RIDE_VEHICLE, true);
+                            deathbringer->SetUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
+                            deathbringer->setDeathState(DeathState::Alive);
+                        }
+                        _events.ScheduleEvent(EVENT_OUTRO_HORDE_4, 1000);
+                        _events.ScheduleEvent(EVENT_OUTRO_HORDE_5, 4000);
+                        break;
+                    case POINT_FINAL:
+                        if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
+                            deathbringer->DespawnOrUnsummon();
+                        me->DespawnOrUnsummon();
+                        break;*/
                     default:
                         break;
                     }
