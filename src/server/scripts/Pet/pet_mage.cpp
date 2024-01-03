@@ -160,7 +160,7 @@ struct npc_pet_mage_mirror_image : CasterAI
             _ebonGargoyleGUID.Clear();
         }
         Unit* owner = me->GetOwner();
-        if (owner && owner->GetTypeId() == TYPEID_PLAYER && (!me->GetVictim() || (me->GetVictim()->IsImmunedToSpell(sSpellMgr->GetSpellInfo(59637)) && me->GetVictim()->IsImmunedToSpell(sSpellMgr->GetSpellInfo(59638)) ) || !me->IsValidAttackTarget(me->GetVictim()) || !owner->CanSeeOrDetect(me->GetVictim())))
+        if (owner && owner->GetTypeId() == TYPEID_PLAYER && (!me->GetVictim() || (me->GetVictim()->IsImmunedToSpell(sSpellMgr->GetSpellInfo(59637)) && me->GetVictim()->IsImmunedToSpell(sSpellMgr->GetSpellInfo(59638)) ) || !me->IsValidAttackTarget(me->GetVictim()) ))
         {
             Unit* selection = owner->ToPlayer()->GetSelectedUnit();
 

@@ -67,7 +67,7 @@ struct npc_pet_pri_shadowfiend : public PetAI
             AttackStart(target);
 
         Unit* owner = me->GetOwner();
-        if (owner && owner->GetTypeId() == TYPEID_PLAYER && (!me->GetVictim() || !me->IsValidAttackTarget(me->GetVictim()) || !owner->CanSeeOrDetect(me->GetVictim())))
+        if (owner && owner->GetTypeId() == TYPEID_PLAYER && (!me->GetVictim() || !me->IsValidAttackTarget(me->GetVictim()) ))
         {
             Unit* selection = owner->ToPlayer()->GetSelectedUnit();
 
