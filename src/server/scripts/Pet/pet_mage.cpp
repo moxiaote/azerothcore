@@ -160,11 +160,11 @@ struct npc_pet_mage_mirror_image : CasterAI
             _ebonGargoyleGUID.Clear();
         }
         Unit* owner = me->GetOwner();
-        if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+        if (owner && owner->GetTypeId() == TYPEID_PLAYER && (!me->GetVictim() || (me->GetVictim()->IsImmunedToSpell(sSpellMgr->GetSpellInfo(59637)) && me->GetVictim()->IsImmunedToSpell(sSpellMgr->GetSpellInfo(59638)) ) || !me->IsValidAttackTarget(me->GetVictim()) || !owner->CanSeeOrDetect(me->GetVictim())))
         {
             Unit* selection = owner->ToPlayer()->GetSelectedUnit();
 
-            if (selection)
+            if (selection && selection != me->GetVictim() && me->IsValidAttackTarget(selection))
             {
                 me->GetThreatMgr().ResetAllThreat();
                 me->AddThreat(selection, 1000000.0f);
@@ -173,7 +173,7 @@ struct npc_pet_mage_mirror_image : CasterAI
                     AttackStart(selection);
             }
 
-            if (!owner->IsInCombat() && !me->GetVictim())
+            else if ((!owner->IsInCombat() && !me->GetVictim()) || !owner->CanSeeOrDetect(me->GetVictim()))
                 EnterEvadeMode(EVADE_REASON_OTHER);
         }
     }
