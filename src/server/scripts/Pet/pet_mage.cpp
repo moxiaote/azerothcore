@@ -173,7 +173,7 @@ struct npc_pet_mage_mirror_image : CasterAI
                     AttackStart(selection);
             }
 
-            else if ((!owner->IsInCombat() && !me->GetVictim()) || !owner->CanSeeOrDetect(me->GetVictim()))
+            else if ((!owner->IsInCombat() && !me->GetVictim()) )
                 EnterEvadeMode(EVADE_REASON_OTHER);
         }
     }

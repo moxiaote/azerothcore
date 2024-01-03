@@ -80,7 +80,7 @@ struct npc_pet_pri_shadowfiend : public PetAI
                     AttackStart(selection);
             }
 
-            else if ((!owner->IsInCombat() && !me->GetVictim()) || !owner->CanSeeOrDetect(me->GetVictim()))
+            else if ((!owner->IsInCombat() && !me->GetVictim()) )
                 EnterEvadeMode(EVADE_REASON_OTHER);
         }
     }
