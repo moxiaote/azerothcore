@@ -67,21 +67,17 @@ struct npc_pet_pri_shadowfiend : public PetAI
             AttackStart(target);
 
         Unit* owner = me->GetOwner();
-        if (owner && owner->GetTypeId() == TYPEID_PLAYER && (!me->GetVictim() || !me->IsValidAttackTarget(me->GetVictim()) ))
+        if (owner && owner->GetTypeId() == TYPEID_PLAYER )
         {
             Unit* selection = owner->ToPlayer()->GetSelectedUnit();
 
-            if (selection && selection != me->GetVictim() && me->IsValidAttackTarget(selection))
+            if (selection && me->IsValidAttackTarget(selection))
             {
                 me->GetThreatMgr().ResetAllThreat();
                 me->AddThreat(selection, 1000000.0f);
-
-                if (owner->IsInCombat())
-                    AttackStart(selection);
+                AttackStart(selection);
+                DoMeleeAttackIfReady();
             }
-
-            else if ((!owner->IsInCombat() && !me->GetVictim()) )
-                EnterEvadeMode(EVADE_REASON_OTHER);
         }
     }
 
