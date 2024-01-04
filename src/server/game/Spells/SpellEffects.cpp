@@ -1930,7 +1930,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
             damage = int32(CalculatePct(unitTarget->GetCreateMana(), 1));  // set 1 as value, missing in dbc
             break;
         case 67545:                                         //修复火法回蓝异常
-            damage = int32(CalculatePct(unitTarget->GetCreateMana(), damage));
+            damage = int32(CalculatePct(unitTarget->GetCreateMana(), 2));
             break;
         default:
             break;
