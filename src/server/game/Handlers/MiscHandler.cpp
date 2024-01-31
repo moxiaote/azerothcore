@@ -299,6 +299,12 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
             {
                 continue;
             }
+
+            // 禁止查询GM号
+            if (target.GetPlayerName() == "猫猫"|| target.GetPlayerName() == "爱玩玩不玩滚"|| target.GetPlayerName() == "你们都白打工"|| target.GetPlayerName() == "水兵月"|| target.GetPlayerName() == "谁在水里跳" || target.GetPlayerName() == "菜鸡")
+            {
+                continue;
+            }
         }
 
         // check if target is globally visible for player
