@@ -2099,6 +2099,35 @@ namespace lfg
         {
             if (Group* group = sGroupMgr->GetGroupByGUID(gguid.GetCounter()))
                 Player::RemoveFromGroup(group, boot.victim, GROUP_REMOVEMETHOD_KICK_LFG);
+            //以下为离线躲逃亡玩家额外惩罚
+            Player* kickedplayer = ObjectAccessor::FindPlayer(boot.victim);
+            if (!kickedplayer)
+            {
+                uint8 index = 0;
+                CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_AURA);
+                stmt->SetData(index++, boot.victim.GetCounter());
+                stmt->SetData(index++, boot.victim.GetCounter());
+                stmt->SetData(index++, 0);
+                stmt->SetData(index++, 71041);
+                stmt->SetData(index++, 1);
+                stmt->SetData(index++, 1);
+                stmt->SetData(index++, 1);
+                stmt->SetData(index++, 0);
+                stmt->SetData(index++, 0);
+                stmt->SetData(index++, 0);
+                stmt->SetData(index++, 0);
+                stmt->SetData(index++, 0);
+                stmt->SetData(index++, 0);
+                stmt->SetData(index++, 1800000);//debuff默认时长
+                stmt->SetData(index++, 3600000);//debuff时长86400秒=1天
+                stmt->SetData(index, 0);
+                CharacterDatabase.Execute(stmt);
+            }
+            else
+            {
+                if ((!kickedplayer->GetMap()->IsDungeon()) && kickedplayer->IsAlive())//检测玩家是否不进本等踢
+                    kickedplayer->AddAura(71041, kickedplayer);
+            }
 
             DecreaseKicksLeft(gguid);
         }
@@ -2289,8 +2318,8 @@ namespace lfg
                 if (player->HasTankSpec() or player->HasHealSpec())
                 {
                     player->AddItem(54218, 1);//T/N奖励额外兰德鲁的礼物盒
-                    player->AddItem(40753, 1);//T/N奖励额外勇气纹章
-                    player->SendSystemMessage("坦克奶妈额外奖励已发放-兰德鲁的礼物盒*1-勇气纹章*1");
+                    player->AddItem(45624, 1);//T/N奖励额外征服纹章
+                    player->SendSystemMessage("坦克奶妈额外奖励已发放-兰德鲁的礼物盒*1-征服纹章*1");
                 }
                 player->RewardQuest(quest, 0, nullptr, false, true);
             }
@@ -2303,8 +2332,8 @@ namespace lfg
                 // we give reward without informing client (retail does this)
                 if (player->HasTankSpec() or player->HasHealSpec())
                 {
-                    player->AddItem(40752, 2);//T/N奖励额外牌子
-                    player->SendSystemMessage("坦克奶妈额外奖励已发放-英雄纹章*2");
+                    player->AddItem(40753, 2);//T/N奖励额外牌子
+                    player->SendSystemMessage("坦克奶妈额外奖励已发放-勇气纹章*2");
                 }
                 player->RewardQuest(quest, 0, nullptr, false, true);
             }
