@@ -775,7 +775,7 @@ class spell_gen_proc_not_self : public AuraScript
                     {
                         caster->CastSpell(target, spellID, true);
                     }
-                }, 10ms);
+                }, 100ms);
             }
     }
 
