@@ -777,7 +777,7 @@ bool BattlefieldWG::FindAndRemoveVehicleFromList(Unit* vehicle)
     {
         if (m_vehicles[itr].find(vehicle->GetGUID()) != m_vehicles[itr].end())
         {
-            //m_vehicles[itr].erase(vehicle->GetGUID());
+            m_vehicles[itr].erase(vehicle->GetGUID());
             if (itr == TEAM_HORDE)
                 UpdateData(BATTLEFIELD_WG_DATA_VEHICLE_H, -1);
             else
