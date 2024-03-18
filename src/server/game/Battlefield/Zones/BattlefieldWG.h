@@ -415,6 +415,10 @@ public:
     void UpdateTenacity();
     void AddUpdateTenacity(Player* player);
     void RemoveUpdateTenacity(Player* player);
+    void AddUpdateTenacityTANKA(Creature* creature);
+    void RemoveUpdateTenacityTANKA(Creature* creature);
+    void AddUpdateTenacityTANKH(Creature* creature);
+    void RemoveUpdateTenacityTANKH(Creature* creature);
     void ProcessEvent(WorldObject* obj, uint32 eventId) override;
 
     bool FindAndRemoveVehicleFromList(Unit* vehicle);
@@ -469,6 +473,8 @@ protected:
     GuidUnorderedSet KeepCreature[2];
     GuidUnorderedSet OutsideCreature[2];
     GuidUnorderedSet m_updateTenacityList;
+    GuidUnorderedSet m_updateTenacityListTANKA;
+    GuidUnorderedSet m_updateTenacityListTANKH;
 
     int32 m_tenacityStack;
     uint32 m_tenacityUpdateTimer;
