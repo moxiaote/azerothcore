@@ -855,6 +855,8 @@ void BattlefieldWG::OnPlayerJoinWar(Player* player)
     RemoveAurasFromPlayer(player);
 
     player->CastSpell(player, SPELL_RECRUIT, true);
+    if (player->IsMounted())
+        player->Dismount();//进冬拥湖战场下坐骑
     AddUpdateTenacity(player);
 
     if (player->GetTeamId() == GetDefenderTeam())
