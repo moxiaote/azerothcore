@@ -858,13 +858,13 @@ void BattlefieldWG::OnPlayerJoinWar(Player* player)
     if (player->IsMounted())
     {
         player->Dismount();//进冬拥湖战场下坐骑
-        player->RemoveAurasByType(SPELL_AURA_MOUNTED);
-        player->RemoveAurasByType(SPELL_AURA_FLY);
-        player->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
-        player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);//增加检测小德飞行
-        player->SetSpeed(MOVE_RUN, 1, true);
-        player->SetSpeed(MOVE_FLIGHT, 1, true);
     }
+    player->RemoveAurasByType(SPELL_AURA_MOUNTED);
+    player->RemoveAurasByType(SPELL_AURA_FLY);
+    player->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+    player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);//增加检测小德飞行
+    player->SetSpeed(MOVE_RUN, 1, true);
+    player->SetSpeed(MOVE_FLIGHT, 1, true);
     AddUpdateTenacity(player);
 
     if (player->GetTeamId() == GetDefenderTeam())
