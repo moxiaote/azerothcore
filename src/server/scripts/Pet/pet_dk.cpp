@@ -356,8 +356,8 @@ class spell_pet_dk_gargoyle_strike : public SpellScript
                 ap = owner->GetInt32Value(UNIT_FIELD_ATTACK_POWER) + owner->GetInt32Value(UNIT_FIELD_ATTACK_POWER_MODS);
             if (caster->GetLevel() >= 60)
             {
-                damage += (caster->GetLevel() - 60) * 4;
-                damage += ap * 0.2;//增加邪DK天鬼伤害0.2AP
+                damage += (caster->GetLevel() - 60) * 3;
+                damage += ap * 0.4;//增加邪DK天鬼伤害0.4AP
             }
         }
 
