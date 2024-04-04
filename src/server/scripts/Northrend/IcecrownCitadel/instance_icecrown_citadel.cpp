@@ -1359,7 +1359,7 @@ public:
                         //leader->GetGUID().GetCounter()
                         if (point != 0)
                         {
-                            if (leader && leader->IsInWorld())//检测团长是否掉线
+                            if (leader && leader->IsInWorld() && !leader->IsDuringRemoveFromWorld() && !leader->IsBeingTeleported())//检测团长是否掉线PLUS
                             {
                                 leader->AddItem(43949, point);
                                 ChatHandler(leader->GetSession()).PSendSysMessage("[星团长] |cff00CC00BOSS击杀完成,增加团长积分%d.|r", point);
