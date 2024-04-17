@@ -1016,7 +1016,7 @@ void BattlefieldWG::BrokenWallOrTower(TeamId  /*team*/)
 }
 
 // Called when a tower is broke
-void BattlefieldWG::UpdatedDestroyedTowerCount(TeamId team, GameObject* go)
+void BattlefieldWG::UpdatedDestroyedTowerCount(TeamId team, GameObject* go,bool islastdoor)
 {
     // Destroy an attack tower
     if (team == GetAttackerTeam())
@@ -1059,8 +1059,11 @@ void BattlefieldWG::UpdatedDestroyedTowerCount(TeamId team, GameObject* go)
             if (Player* player = ObjectAccessor::FindPlayer(*itr))
             {
                 // Quest - Wintergrasp - Vehicle Protected
-                if (go && player->GetDistance2d(go) < 100.0f)
-                    player->KilledMonsterCredit(NPC_QUEST_VEHICLE_PROTECTED);
+                if (go && player->GetDistance2d(go) < 200.0f)
+                    if (islastdoor)
+                        player->KilledMonsterCredit(NPC_QUEST_GATE_KILL);
+                    else
+                        player->KilledMonsterCredit(NPC_QUEST_VEHICLE_PROTECTED);
             }
     }
 }
