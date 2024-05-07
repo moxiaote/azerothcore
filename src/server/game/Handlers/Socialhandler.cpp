@@ -61,7 +61,7 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& recv_data)
     {
         if (friendGuid)
         {
-            if (friendGuid == GetPlayer()->GetGUID())
+            if (friendGuid == GetPlayer()->GetGUID() || friendAccountId <= 6)//禁止添加GM号(1-6)
                 friendResult = FRIEND_SELF;
             else if (GetPlayer()->GetTeamId() != teamId && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND)  && AccountMgr::IsPlayerAccount(GetSecurity()))
                 friendResult = FRIEND_ENEMY;

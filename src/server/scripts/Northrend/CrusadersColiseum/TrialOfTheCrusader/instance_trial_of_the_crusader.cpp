@@ -278,6 +278,7 @@ public:
             {
                 case TYPE_FAILED:
                     // - some scene here?
+                    ResetPlayerCooldown();//团灭后清除技能CD
                     if( instance->IsHeroic() && !CLEANED )
                     {
                         if( AttemptsLeft > 0 )
@@ -386,6 +387,7 @@ public:
                 case TYPE_NORTHREND_BEASTS_ALL:
                     if (data == DONE)
                     {
+                        ResetPlayerCooldown();//击杀后清除技能CD
                         northrendBeastsMask = 0;
                         EncounterStatus = NOT_STARTED;
                         InstanceProgress = INSTANCE_PROGRESS_BEASTS_DEAD;
@@ -401,6 +403,7 @@ public:
                         HandleGameObject(GO_EnterGateGUID, false);
                     else if( data == DONE )
                     {
+                        ResetPlayerCooldown();//击杀后清除技能CD
                         HandleGameObject(GO_EnterGateGUID, true);
                         InstanceProgress = INSTANCE_PROGRESS_JARAXXUS_DEAD;
                         events.RescheduleEvent(EVENT_SCENE_110, 2500);
@@ -445,6 +448,7 @@ public:
 
                                 if (GameObject* go = c->SummonGameObject(cacheEntry, Locs[LOC_CENTER].GetPositionX(), Locs[LOC_CENTER].GetPositionY(), Locs[LOC_CENTER].GetPositionZ(), Locs[LOC_CENTER].GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 630000000))
                                 {
+                                    ResetPlayerCooldown();//击杀后清除技能CD
                                     go->SetLootRecipient(instance);
                                 }
                             }
@@ -487,6 +491,7 @@ public:
                 case TYPE_VALKYR:
                     if( data == DONE && ++Counter >= 2 )
                     {
+                        ResetPlayerCooldown();//击杀后清除技能CD
                         Counter = 0;
                         EncounterStatus = NOT_STARTED;
                         InstanceProgress = INSTANCE_PROGRESS_VALKYR_DEAD;
@@ -505,6 +510,8 @@ public:
                     }
                     else if( data == DONE )
                     {
+                        ResetPlayerCooldown();//击杀后清除技能CD
+                        StarLeaderpoint();//击杀后增加团长分数
                         Counter = 0;
                         EncounterStatus = NOT_STARTED;
                         InstanceProgress = INSTANCE_PROGRESS_DONE;
@@ -525,6 +532,84 @@ public:
                     break;
             }
         }
+
+        void ResetPlayerCooldown()//重置玩家技能
+        {
+            Map::PlayerList const& players = instance->GetPlayers();
+            if (!players.IsEmpty())
+                for (Map::PlayerList::const_iterator itrp = players.begin(); itrp != players.end(); ++itrp)
+                {
+                    if (Player* player = itrp->GetSource())
+                    {
+                        player->RemoveAura(57723);//移除英勇debuff
+                        player->RemoveAura(32182);//移除英勇
+                        player->RemoveAura(57724);//移除嗜血debuff
+                        player->RemoveAura(2825);//移除嗜血
+                        player->RemoveAura(25771);//移除自律debuff
+
+                        uint32 infTime = GameTime::GetGameTimeMS().count() + infinityCooldownDelayCheck;
+                        SpellCooldowns::iterator itr, next;
+
+                        for (itr = player->GetSpellCooldownMap().begin(); itr != player->GetSpellCooldownMap().end(); itr = next)
+                        {
+                            next = itr;
+                            ++next;
+                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                            if (!spellInfo)
+                                continue;
+
+                            // Get correct spell cooldown times
+                            uint32 remainingCooldown = player->GetSpellCooldownDelay(spellInfo->Id);
+                            int32 totalCooldown = spellInfo->RecoveryTime;
+                            int32 categoryCooldown = spellInfo->CategoryRecoveryTime;
+                            player->ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, totalCooldown, nullptr);
+                            if (int32 cooldownMod = player->GetTotalAuraModifier(SPELL_AURA_MOD_COOLDOWN))
+                                totalCooldown += cooldownMod * IN_MILLISECONDS;
+
+                            if (!spellInfo->HasAttribute(SPELL_ATTR6_NO_CATEGORY_COOLDOWN_MODS))
+                                player->ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, categoryCooldown, nullptr);
+
+                            // Clear cooldown if < 10min & (passed time > 30sec)
+                            if (remainingCooldown > 0
+                                && itr->second.end < infTime
+                                && totalCooldown <= 30 * MINUTE * IN_MILLISECONDS
+                                && categoryCooldown <= 30 * MINUTE * IN_MILLISECONDS
+                                && remainingCooldown <= 30 * MINUTE * IN_MILLISECONDS
+                                )
+                                player->RemoveSpellCooldown(itr->first, true);
+                        }
+                    }
+                }
+        }
+
+        void StarLeaderpoint()//团长计分
+        {
+            Map::PlayerList const& players = instance->GetPlayers();
+            if (!players.IsEmpty())//检测玩家列表
+                if (Player* player = players.begin()->GetSource())
+                {
+                    if (player->GetGroup())//队伍检测
+                    {
+                        Player* leader = player->GetGroup()->GetLeader();//获取队长
+                        int point = 1;
+
+                        if (player->GetMap()->Is25ManRaid())
+                        {
+                            point = 3;
+                            if (player->GetMap()->IsHeroic())
+                                point = 4;
+                        }
+                        //leader->GetGUID().GetCounter()
+                        if (leader && leader->IsInWorld() && !leader->IsDuringRemoveFromWorld() && !leader->IsBeingTeleported())//检测团长是否掉线PLUS
+                        {
+                            leader->AddItem(43949, point);
+                            ChatHandler(leader->GetSession()).PSendSysMessage("[星团长] |cff00CC00BOSS击杀完成,增加团长积分%d.|r", point);
+                        }
+                    }
+                }
+
+        }
+
 
         uint32 GetData(uint32 type) const override
         {
@@ -1346,7 +1431,7 @@ public:
                         {
                             c->AI()->Talk(SAY_STAGE_4_06);
                             c->SummonCreature(NPC_ARGENT_MAGE, Locs[LOC_MAGE].GetPositionX(), Locs[LOC_MAGE].GetPositionY(), Locs[LOC_MAGE].GetPositionZ(), Locs[LOC_MAGE].GetOrientation());
-                            c->SummonGameObject(195682, 668.15f, 134.57f, 142.12f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 630000000);
+                            //c->SummonGameObject(195682, 668.15f, 134.57f, 142.12f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 630000000);
                         }
 
                         events.RescheduleEvent(EVENT_SCENE_502, 20000);
@@ -1359,9 +1444,9 @@ public:
                             uint32 tributeChest = 0;
                             if( instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC )
                             {
-                                if (AttemptsLeft >= 50)
+                                if (AttemptsLeft >= 50)//为照顾玩家,降低50箱子难度-45
                                     tributeChest = GO_TRIBUTE_CHEST_10H_99;
-                                else if (AttemptsLeft >= 45)
+                                else if (AttemptsLeft >= 45)//为照顾玩家,降低45箱子难度-40
                                     tributeChest = GO_TRIBUTE_CHEST_10H_50;
                                 else if (AttemptsLeft >= 25)
                                     tributeChest = GO_TRIBUTE_CHEST_10H_45;
@@ -1370,9 +1455,9 @@ public:
                             }
                             else if( instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC )
                             {
-                                if (AttemptsLeft >= 50)
+                                if (AttemptsLeft >= 50)//为照顾玩家,降低50箱子难度-45
                                     tributeChest = GO_TRIBUTE_CHEST_25H_99;
-                                else if (AttemptsLeft >= 45)
+                                else if (AttemptsLeft >= 45)//为照顾玩家,降低45箱子难度-40
                                     tributeChest = GO_TRIBUTE_CHEST_25H_50;
                                 else if (AttemptsLeft >= 25)
                                     tributeChest = GO_TRIBUTE_CHEST_25H_45;

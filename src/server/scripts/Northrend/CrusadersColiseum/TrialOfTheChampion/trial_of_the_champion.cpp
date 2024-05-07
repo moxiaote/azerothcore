@@ -21,6 +21,7 @@
 #include "ScriptedCreature.h"
 #include "ScriptedGossip.h"
 
+
 enum Texts
 {
     NPC_TEXT_NOT_MOUNTED_H = 15043,  // Horde text

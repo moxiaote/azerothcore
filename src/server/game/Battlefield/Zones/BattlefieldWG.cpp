@@ -456,6 +456,8 @@ void BattlefieldWG::OnBattleEnd(bool endByTimer)
         if (Player* player = ObjectAccessor::FindPlayer(*itr))
         {
             player->CastSpell(player, SPELL_DEFEAT_REWARD, true);
+            if (player->HasAura(SPELL_LIEUTENANT))
+                player->AreaExploredOrEventHappens(GetAttackerTeam() ? 13183 : 13181); // 增加中尉胜利奖励
             RemoveAurasFromPlayer(player);
 
             for (uint8 i = 0; i < damagedTowersAtt; ++i)
@@ -597,6 +599,7 @@ void BattlefieldWG::OnCreatureCreate(Creature* creature)
                             UpdateData(BATTLEFIELD_WG_DATA_VEHICLE_H, 1);
                             creature->CastSpell(creature, SPELL_HORDE_FLAG, true);
                             m_vehicles[team].insert(creature->GetGUID());
+                            AddUpdateTenacityTANKH(creature);
                             UpdateVehicleCountWG();
                         }
                         else
@@ -612,6 +615,7 @@ void BattlefieldWG::OnCreatureCreate(Creature* creature)
                             UpdateData(BATTLEFIELD_WG_DATA_VEHICLE_A, 1);
                             creature->CastSpell(creature, SPELL_ALLIANCE_FLAG, true);
                             m_vehicles[team].insert(creature->GetGUID());
+                            AddUpdateTenacityTANKA(creature);
                             UpdateVehicleCountWG();
                         }
                         else
@@ -777,9 +781,15 @@ bool BattlefieldWG::FindAndRemoveVehicleFromList(Unit* vehicle)
         {
             //m_vehicles[itr].erase(vehicle->GetGUID());
             if (itr == TEAM_HORDE)
+            {
                 UpdateData(BATTLEFIELD_WG_DATA_VEHICLE_H, -1);
+                RemoveUpdateTenacityTANKH(vehicle->ToCreature());
+             }
             else
+            {
                 UpdateData(BATTLEFIELD_WG_DATA_VEHICLE_A, -1);
+                RemoveUpdateTenacityTANKA(vehicle->ToCreature());
+            }
             return true;
         }
     }
@@ -845,6 +855,16 @@ void BattlefieldWG::OnPlayerJoinWar(Player* player)
     RemoveAurasFromPlayer(player);
 
     player->CastSpell(player, SPELL_RECRUIT, true);
+    if (player->IsMounted())
+    {
+        player->Dismount();//进冬拥湖战场下坐骑
+    }
+    player->RemoveAurasByType(SPELL_AURA_MOUNTED);
+    player->RemoveAurasByType(SPELL_AURA_FLY);
+    player->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+    player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);//增加检测小德飞行
+    player->SetSpeed(MOVE_RUN, 1, true);
+    player->SetSpeed(MOVE_FLIGHT, 1, true);
     AddUpdateTenacity(player);
 
     if (player->GetTeamId() == GetDefenderTeam())
@@ -996,7 +1016,7 @@ void BattlefieldWG::BrokenWallOrTower(TeamId  /*team*/)
 }
 
 // Called when a tower is broke
-void BattlefieldWG::UpdatedDestroyedTowerCount(TeamId team, GameObject* go)
+void BattlefieldWG::UpdatedDestroyedTowerCount(TeamId team, GameObject* go,bool islastdoor)
 {
     // Destroy an attack tower
     if (team == GetAttackerTeam())
@@ -1039,8 +1059,11 @@ void BattlefieldWG::UpdatedDestroyedTowerCount(TeamId team, GameObject* go)
             if (Player* player = ObjectAccessor::FindPlayer(*itr))
             {
                 // Quest - Wintergrasp - Vehicle Protected
-                if (go && player->GetDistance2d(go) < 100.0f)
-                    player->KilledMonsterCredit(NPC_QUEST_VEHICLE_PROTECTED);
+                if (go && player->GetDistance2d(go) < 200.0f)
+                    if (islastdoor)
+                        player->KilledMonsterCredit(NPC_QUEST_GATE_KILL);
+                    else
+                        player->KilledMonsterCredit(NPC_QUEST_VEHICLE_PROTECTED);
             }
     }
 }
@@ -1119,19 +1142,42 @@ void BattlefieldWG::RemoveUpdateTenacity(Player* player)
     m_updateTenacityList.insert(ObjectGuid::Empty);
 }
 
+void BattlefieldWG::AddUpdateTenacityTANKA(Creature* creature)
+{
+    m_updateTenacityListTANKA.insert(creature->GetGUID());
+}
+
+void BattlefieldWG::RemoveUpdateTenacityTANKA(Creature* creature)
+{
+    m_updateTenacityListTANKA.erase(creature->GetGUID());
+    m_updateTenacityListTANKA.insert(ObjectGuid::Empty);
+}
+
+void BattlefieldWG::AddUpdateTenacityTANKH(Creature* creature)
+{
+    m_updateTenacityListTANKH.insert(creature->GetGUID());
+}
+
+void BattlefieldWG::RemoveUpdateTenacityTANKH(Creature* creature)
+{
+    m_updateTenacityListTANKH.erase(creature->GetGUID());
+    m_updateTenacityListTANKH.insert(ObjectGuid::Empty);
+}
+
 void BattlefieldWG::UpdateTenacity()
 {
     TeamId team = TEAM_NEUTRAL;
     uint32 alliancePlayers = m_PlayersInWar[TEAM_ALLIANCE].size();
     uint32 hordePlayers = m_PlayersInWar[TEAM_HORDE].size();
     int32 newStack = 0;
+    int32 maxStack = 99;//集中上限变量
 
     if (alliancePlayers && hordePlayers)
     {
         if (alliancePlayers < hordePlayers)
-            newStack = int32((((float)hordePlayers / alliancePlayers) - 1.0f) * 4.0f);  // positive, should cast on alliance
+            newStack = int32((((float)hordePlayers / alliancePlayers) - 1.0f) * 6.0f);  // positive, should cast on alliance参数从4倍增加到6倍
         else if (alliancePlayers > hordePlayers)
-            newStack = int32((1.0f - ((float)alliancePlayers / hordePlayers)) * 4.0f);  // negative, should cast on horde
+            newStack = int32((1.0f - ((float)alliancePlayers / hordePlayers)) * 6.0f);  // negative, should cast on horde参数从4倍增加到6倍
     }
 
     // Return if no change in stack and apply tenacity to new player
@@ -1141,11 +1187,31 @@ void BattlefieldWG::UpdateTenacity()
             if (Player* newPlayer = ObjectAccessor::FindPlayer(*itr))
                 if ((newPlayer->GetTeamId() == TEAM_ALLIANCE && m_tenacityStack > 0) || (newPlayer->GetTeamId() == TEAM_HORDE && m_tenacityStack < 0))
                 {
-                    newStack = std::min(std::abs(newStack), 20);
+                    newStack = std::min(std::abs(newStack), maxStack);//上限提升至99层
                     uint32 buff_honor = GetHonorBuff(newStack);
                     newPlayer->SetAuraStack(SPELL_TENACITY, newPlayer, newStack);
                     if (buff_honor)
                         newPlayer->CastSpell(newPlayer, buff_honor, true);
+                }
+        for (GuidUnorderedSet::const_iterator itr = m_updateTenacityListTANKA.begin(); itr != m_updateTenacityListTANKA.end(); ++itr)//联盟新坦克BUFF增加
+            if (Creature* newcreature = GetCreature(*itr))
+                if (m_tenacityStack > 0)
+                {
+                    newStack = std::min(std::abs(newStack), maxStack);//上限提升至99层
+                    uint32 buff_honor = GetHonorBuff(newStack);
+                    newcreature->SetAuraStack(SPELL_TENACITY_VEHICLE, newcreature, newStack);
+                    if (buff_honor)
+                        newcreature->CastSpell(newcreature, buff_honor, true);
+                }
+        for (GuidUnorderedSet::const_iterator itr = m_updateTenacityListTANKH.begin(); itr != m_updateTenacityListTANKH.end(); ++itr)//部落新坦克BUFF增加
+            if (Creature* newcreature = GetCreature(*itr))
+                if (m_tenacityStack < 0)
+                {
+                    newStack = std::min(std::abs(newStack), maxStack);//上限提升至99层
+                    uint32 buff_honor = GetHonorBuff(newStack);
+                    newcreature->SetAuraStack(SPELL_TENACITY_VEHICLE, newcreature, newStack);
+                    if (buff_honor)
+                        newcreature->CastSpell(newcreature, buff_honor, true);
                 }
         return;
     }
@@ -1175,7 +1241,7 @@ void BattlefieldWG::UpdateTenacity()
     if (newStack)
     {
         team = newStack > 0 ? TEAM_ALLIANCE : TEAM_HORDE;
-        newStack = std::min(std::abs(newStack), 20);
+        newStack = std::min(std::abs(newStack), maxStack);//上限提升至99层
         uint32 buff_honor = GetHonorBuff(newStack);
 
         for (GuidUnorderedSet::const_iterator itr = m_PlayersInWar[team].begin(); itr != m_PlayersInWar[team].end(); ++itr)

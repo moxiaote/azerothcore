@@ -299,6 +299,12 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
             {
                 continue;
             }
+
+            // 禁止查询GM号
+            //if (target.GetPlayerName() == "猫猫"|| target.GetPlayerName() == "爱玩玩不玩滚"|| target.GetPlayerName() == "你们都白打工"|| target.GetPlayerName() == "水兵月"|| target.GetPlayerName() == "谁在水里跳" || target.GetPlayerName() == "菜鸡")
+            //{
+                //continue;
+            //}
         }
 
         // check if target is globally visible for player
@@ -408,6 +414,12 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     }
 
     data.put(0, displaycount);                            // insert right count, count displayed
+
+    if ((matchCount > displaycount) && (AccountMgr::IsPlayerAccount(security)))
+    {
+        matchCount = 999000+ matchCount/100+ matchCount%100/10*10+ matchCount%10*100;//超过人数后修改
+    }
+
     data.put(4, matchCount);                              // insert right count, count of matches
 
     SendPacket(&data);
@@ -1402,14 +1414,21 @@ void WorldSession::HandleSetRaidDifficultyOpcode(WorldPacket& recv_data)
                 switch (group->GetDifficultyChangePreventionReason())
                 {
                     case DIFFICULTY_PREVENTION_CHANGE_BOSS_KILLED:
-                        ChatHandler(this).PSendSysMessage("Raid was in combat recently and may not change difficulty again for %u sec.", preventionTime);
+                        ChatHandler(this).PSendSysMessage("刚进行了副本战斗, 请等待 %u 秒后再试.", preventionTime);
                         break;
                     case DIFFICULTY_PREVENTION_CHANGE_RECENTLY_CHANGED:
                     default:
-                        ChatHandler(this).PSendSysMessage("Raid difficulty has changed recently, and may not change again for %u sec.", preventionTime);
+                        ChatHandler(this).PSendSysMessage("刚进行了副本难度切换, 请等待 %u 秒后再试.", preventionTime);
                         break;
                 }
 
+                _player->SendRaidDifficulty(group != nullptr);
+                return;
+            }
+
+            if (group->isRollLootActive())
+            {
+                ChatHandler(this).PSendSysMessage("装备分配中, 请稍后再试.");
                 _player->SendRaidDifficulty(group != nullptr);
                 return;
             }

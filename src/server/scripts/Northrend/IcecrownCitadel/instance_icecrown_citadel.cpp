@@ -28,6 +28,7 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "icecrown_citadel.h"
+#include "GameTime.h"
 
 enum EventIds
 {
@@ -268,6 +269,9 @@ public:
 
             if (GetBossState(DATA_LADY_DEATHWHISPER) == DONE && GetBossState(DATA_ICECROWN_GUNSHIP_BATTLE) != DONE)
                 SpawnGunship();
+
+            if (GetBossState(DATA_SINDRAGOSA) == NOT_STARTED)
+                IsSindragosaIntroDone = true;
 
             if (GetBossState(DATA_SINDRAGOSA) != DONE && IsSindragosaIntroDone && !GetCreature(DATA_SINDRAGOSA) && Events.GetTimeUntilEvent(EVENT_RESPAWN_SINDRAGOSA) == Milliseconds::max())
             {
@@ -1088,6 +1092,16 @@ public:
             if (!InstanceScript::SetBossState(type, state))
                 return false;
 
+            if (state == DONE)//击杀任意BOSS后执行
+            {
+                ResetPlayerCooldown(false);
+            }
+
+            if (state == FAIL)//灭团后执行
+            {
+                ResetPlayerCooldown(true);
+            }
+
             switch (type)
             {
                 case DATA_LORD_MARROWGAR:
@@ -1098,11 +1112,15 @@ public:
                         if (GameObject* transporter = instance->GetGameObject(ScourgeTransporterFirstGUID))
                             transporter->RemoveGameObjectFlag(GO_FLAG_NOT_SELECTABLE);
                         SaveToDB();
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
                     }
                     break;
                 case DATA_LADY_DEATHWHISPER:
                     if (state == DONE)
+                    {
                         SpawnGunship();
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
+                    }
                     break;
                 case DATA_ICECROWN_GUNSHIP_BATTLE:
                     if (state == DONE)
@@ -1112,6 +1130,7 @@ public:
                             loot->SetLootRecipient(instance);
                             loot->RemoveGameObjectFlag(GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE | GO_FLAG_NODESPAWN);
                         }
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
                     }
                     else if (state == FAIL)
                         Events.ScheduleEvent(EVENT_RESPAWN_GUNSHIP, 30s);
@@ -1120,6 +1139,7 @@ public:
                     switch (state)
                     {
                         case DONE:
+                            StarLeaderpoint(false, 1);//击杀后增加团长分数
                             if (GameObject* loot = instance->GetGameObject(DeathbringersCacheGUID))
                             {
                                 if (Creature* deathbringer = instance->GetCreature(DeathbringerSaurfangGUID))
@@ -1145,6 +1165,7 @@ public:
                             go->RemoveGameObjectFlag(GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
                         if (GetBossState(DATA_ROTFACE) == DONE)
                             HandleDropAttempt(false);
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
                     }
                     break;
                 case DATA_ROTFACE:
@@ -1154,13 +1175,17 @@ public:
                             go->RemoveGameObjectFlag(GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
                         if (GetBossState(DATA_FESTERGUT) == DONE)
                             HandleDropAttempt(false);
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
                     }
                     break;
                 case DATA_PROFESSOR_PUTRICIDE:
                     HandleGameObject(PutricideEnteranceDoorGUID, (PutricideEventProgress & PUTRICIDE_EVENT_FLAG_TRAP_FINISHED) && state != IN_PROGRESS);
                     HandleGameObject(PlagueSigilGUID, state != DONE);
                     if (state == DONE)
+                    {
                         CheckLichKingAvailability();
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
+                    }
                     else if (state == FAIL)
                         HandleDropAttempt();
                     if (state == DONE && !instance->IsHeroic() && LichKingHeroicAvailable)
@@ -1172,7 +1197,10 @@ public:
                 case DATA_BLOOD_QUEEN_LANA_THEL:
                     HandleGameObject(BloodwingSigilGUID, state != DONE);
                     if (state == DONE)
+                    {
                         CheckLichKingAvailability();
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
+                    }
                     else if (state == FAIL)
                         HandleDropAttempt();
                     if (state == DONE && !instance->IsHeroic() && LichKingHeroicAvailable)
@@ -1183,12 +1211,18 @@ public:
                     break;
                 case DATA_VALITHRIA_DREAMWALKER:
                     if (state == DONE)
+                    {
+                        StarLeaderpoint(true, 2);//击杀后增加团长分数
                         SetData(DATA_WEEKLY_QUEST_ID, GetData(DATA_WEEKLY_QUEST_ID)); // will show weekly quest npc if necessary
+                    }
                     break;
                 case DATA_SINDRAGOSA:
                     HandleGameObject(FrostwingSigilGUID, state != DONE);
                     if (state == DONE)
+                    {
                         CheckLichKingAvailability();
+                        StarLeaderpoint(true, 1);//击杀后增加团长分数
+                    }
                     else if (state == FAIL)
                     {
                         IsSindragosaIntroDone = true;
@@ -1226,6 +1260,7 @@ public:
 
                         if (state == DONE)
                         {
+                            StarLeaderpoint(false,1);//击杀后增加团长分数
                             if (GameObject* bolvar = instance->GetGameObject(FrozenBolvarGUID))
                                 bolvar->SetRespawnTime(7 * DAY);
                             if (GameObject* pillars = instance->GetGameObject(PillarsChainedGUID))
@@ -1248,6 +1283,92 @@ public:
             return true;
         }
 
+        void ResetPlayerCooldown(bool failed)//重置玩家技能
+        {
+            Map::PlayerList const& players = instance->GetPlayers();
+            if (!players.IsEmpty())
+                for (Map::PlayerList::const_iterator itrp = players.begin(); itrp != players.end(); ++itrp)
+                {
+                    if (Player* player = itrp->GetSource())
+                    {
+                        if (failed && player->IsAlive() && !player->HasAura(19753) && !player->HasAura(5384) && !player->HasAura(32612) && !player->HasAura(642) && !player->HasAura(27827) && !player->HasAura(70157) && !player->HasAura(71289))//检查是否灭团
+                            return;
+                        player->RemoveAura(57723);//移除英勇debuff
+                        player->RemoveAura(32182);//移除英勇
+                        player->RemoveAura(57724);//移除嗜血debuff
+                        player->RemoveAura(2825);//移除嗜血
+                        player->RemoveAura(25771);//移除自律debuff
+                        player->UnsummonAllTotems();//移除所有图腾
+
+                        uint32 infTime = GameTime::GetGameTimeMS().count() + infinityCooldownDelayCheck;
+                        SpellCooldowns::iterator itr, next;
+
+                        for (itr = player->GetSpellCooldownMap().begin(); itr != player->GetSpellCooldownMap().end(); itr = next)
+                        {
+                            next = itr;
+                            ++next;
+                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                            if (!spellInfo)
+                                continue;
+
+                            // Get correct spell cooldown times
+                            uint32 remainingCooldown = player->GetSpellCooldownDelay(spellInfo->Id);
+                            int32 totalCooldown = spellInfo->RecoveryTime;
+                            int32 categoryCooldown = spellInfo->CategoryRecoveryTime;
+                            player->ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, totalCooldown, nullptr);
+                            if (int32 cooldownMod = player->GetTotalAuraModifier(SPELL_AURA_MOD_COOLDOWN))
+                                totalCooldown += cooldownMod * IN_MILLISECONDS;
+
+                            if (!spellInfo->HasAttribute(SPELL_ATTR6_NO_CATEGORY_COOLDOWN_MODS))
+                                player->ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, categoryCooldown, nullptr);
+
+                            // Clear cooldown if < 10min & (passed time > 30sec)
+                            if (remainingCooldown > 0
+                                && itr->second.end < infTime
+                                && totalCooldown <= 30 * MINUTE * IN_MILLISECONDS
+                                && categoryCooldown <= 30 * MINUTE * IN_MILLISECONDS
+                                && remainingCooldown <= 30 * MINUTE * IN_MILLISECONDS
+                                )
+                                player->RemoveSpellCooldown(itr->first, true);
+                        }
+                    }
+                }
+        }
+
+        void StarLeaderpoint(bool NO10MANPOINTBOSS,int ADD25POINT)//团长计分
+        {
+            Map::PlayerList const& players = instance->GetPlayers();
+            if (!players.IsEmpty())//检测玩家列表
+                if (Player* player = players.begin()->GetSource())
+                {
+                    if (player->GetGroup())//队伍检测
+                    {
+                        Player* leader = player->GetGroup()->GetLeader();//获取队长
+                        int point = 1;
+
+                        if (player->GetMap()->Is25ManRaid())
+                        {
+                            point = ADD25POINT;
+                        }
+                        else
+                        {
+                            if (NO10MANPOINTBOSS)
+                                point = 0;
+                        }
+
+                        //leader->GetGUID().GetCounter()
+                        if (point != 0)
+                        {
+                            if (leader && leader->IsInWorld() && !leader->IsDuringRemoveFromWorld() && !leader->IsBeingTeleported())//检测团长是否掉线PLUS
+                            {
+                                leader->AddItem(43949, point);
+                                ChatHandler(leader->GetSession()).PSendSysMessage("[星团长] |cff00CC00BOSS击杀完成,增加团长积分%d.|r", point);
+                            }
+                        }
+                    }
+                }
+        }
+
         void SpawnGunship()
         {
             if (!GunshipGUID && instance->HavePlayers())
@@ -1266,6 +1387,10 @@ public:
         {
             switch (type)
             {
+                case DATA_SUMMON_SINDRAGOSA:
+                    if (GetBossState(DATA_SINDRAGOSA) != DONE && !GetCreature(DATA_SINDRAGOSA) && Events.GetTimeUntilEvent(EVENT_RESPAWN_SINDRAGOSA) == Milliseconds::max())
+                        Events.ScheduleEvent(EVENT_RESPAWN_SINDRAGOSA, 30s);
+                    break;
                 case DATA_BUFF_AVAILABLE:
                     IsBuffAvailable = !!data;
                     if (!IsBuffAvailable)

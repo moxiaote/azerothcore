@@ -217,7 +217,7 @@ public:
                         break;
                     }
                     events.Repeat(5s);
-                    Unit* unit = SelectTarget(SelectTargetMethod::Random, 0, BoneStormMoveTargetSelector(me));
+                    Unit* unit = SelectTarget(SelectTargetMethod::MaxDistance, 0, BoneStormMoveTargetSelector(me));//修改为白骨风暴点最远目标
                     if (!unit)
                     {
                         if ((unit = SelectTarget(SelectTargetMethod::MaxThreat, 0, 175.0f, true)))
@@ -321,7 +321,7 @@ public:
 
         void IsSummonedBy(WorldObject* /*summoner*/) override
         {
-            events.ScheduleEvent(1, 450ms);
+            events.ScheduleEvent(1, 360ms);
             events.ScheduleEvent(2, 12s);
             me->m_positionZ = 42.5f;
         }
@@ -335,20 +335,24 @@ public:
                 case 0:
                     break;
                 case 1:
+                {
+                    float height = 42.5f;
+                    if (Player* player = me->SelectNearestPlayer(12.0f))
+                        height = player->GetPositionZ();
+                    me->m_positionZ = height;
+                    me->DisableSpline();
+                    me->CastSpell(me, SPELL_COLDFLAME_SUMMON, true);
+                    float nx = me->GetPositionX() + 4.0f * cos(me->GetOrientation());
+                    float ny = me->GetPositionY() + 4.0f * std::sin(me->GetOrientation());
+                    if (!me->IsWithinLOS(nx, ny, height + 3.0f))
                     {
-                        me->m_positionZ = 42.5f;
-                        me->DisableSpline();
-                        me->CastSpell(me, SPELL_COLDFLAME_SUMMON, true);
-                        float nx = me->GetPositionX() + 5.0f * cos(me->GetOrientation());
-                        float ny = me->GetPositionY() + 5.0f * std::sin(me->GetOrientation());
-                        if (!me->IsWithinLOS(nx, ny, 42.5f))
-                        {
-                            break;
-                        }
-                        me->NearTeleportTo(nx, ny, 42.5f, me->GetOrientation());
-                        events.Repeat(450ms);
+                        if (height < 43.0f)
+                        break;
                     }
-                    break;
+                    me->NearTeleportTo(nx, ny, height, me->GetOrientation());
+                    events.Repeat(360ms);
+                }
+                break;
                 case 2:
                     events.Reset();
                     break;

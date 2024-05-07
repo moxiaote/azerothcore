@@ -217,6 +217,7 @@ enum WintergraspNpcs
 
     NPC_QUEST_SOUTHERN_TOWER_KILL                   = 35074,
     NPC_QUEST_VEHICLE_PROTECTED                     = 31284,
+    NPC_QUEST_GATE_KILL                             = 31289,
     NPC_QUEST_PVP_KILL_VEHICLE                      = 31093,
     NPC_QUEST_PVP_KILL_HORDE                        = 39019,
     NPC_QUEST_PVP_KILL_ALLIANCE                     = 31086,
@@ -375,7 +376,7 @@ public:
      * - Update tower buff
      * - check if three south tower is down for remove 10 minutes to wg
      */
-    void UpdatedDestroyedTowerCount(TeamId team, GameObject* go);
+    void UpdatedDestroyedTowerCount(TeamId team, GameObject* go, bool islastdoor = false);
 
     //void DoCompleteOrIncrementAchievement(uint32 achievement, Player* player, uint8 incrementNumber = 1);
 
@@ -415,6 +416,10 @@ public:
     void UpdateTenacity();
     void AddUpdateTenacity(Player* player);
     void RemoveUpdateTenacity(Player* player);
+    void AddUpdateTenacityTANKA(Creature* creature);
+    void RemoveUpdateTenacityTANKA(Creature* creature);
+    void AddUpdateTenacityTANKH(Creature* creature);
+    void RemoveUpdateTenacityTANKH(Creature* creature);
     void ProcessEvent(WorldObject* obj, uint32 eventId) override;
 
     bool FindAndRemoveVehicleFromList(Unit* vehicle);
@@ -469,6 +474,8 @@ protected:
     GuidUnorderedSet KeepCreature[2];
     GuidUnorderedSet OutsideCreature[2];
     GuidUnorderedSet m_updateTenacityList;
+    GuidUnorderedSet m_updateTenacityListTANKA;
+    GuidUnorderedSet m_updateTenacityListTANKH;
 
     int32 m_tenacityStack;
     uint32 m_tenacityUpdateTimer;
@@ -1210,7 +1217,10 @@ struct BfWGGameObjectBuilding
             case BATTLEFIELD_WG_OBJECTTYPE_DOOR_LAST:
                 m_WG->SetRelicInteractible(true);
                 if (GameObject* go = m_WG->GetRelic())
+                {
                     go->RemoveGameObjectFlag(GO_FLAG_NOT_SELECTABLE);
+                    m_WG->UpdatedDestroyedTowerCount(TeamId(m_Team), m_WG->GetGameObject(m_Build), true);//增加宝库大门击破调用
+                }
                 else
                     LOG_ERROR("bg.battlefield", "BattlefieldWG: Relic not found.");
                 break;

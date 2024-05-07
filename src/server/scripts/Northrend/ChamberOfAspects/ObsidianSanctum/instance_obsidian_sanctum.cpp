@@ -46,6 +46,7 @@ public:
             LoadBossBoundaries(boundaries);
         }
 
+
         void OnCreatureCreate(Creature* pCreature) override
         {
             switch(pCreature->GetEntry())

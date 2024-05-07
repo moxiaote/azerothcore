@@ -3985,6 +3985,13 @@ enum Mounts
     SPELL_CELESTIAL_STEED_280           = 75618,
     SPELL_CELESTIAL_STEED_310           = 76153,
 
+    // miaomount
+    SPELL_MIAOMOUNT_60 = 99990,
+    SPELL_MIAOMOUNT_100 = 99989,
+    SPELL_MIAOMOUNT_150 = 99988,
+    SPELL_MIAOMOUNT_280 = 99987,
+    SPELL_MIAOMOUNT_310 = 99986,
+
     // X-53 Touring Rocket
     SPELL_X53_TOURING_ROCKET_150        = 75957,
     SPELL_X53_TOURING_ROCKET_280        = 75972,
@@ -5257,6 +5264,7 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScriptWithArgs(spell_gen_mount, "spell_invincible", 0, SPELL_INVINCIBLE_60, SPELL_INVINCIBLE_100, SPELL_INVINCIBLE_150, SPELL_INVINCIBLE_310, 0);
     RegisterSpellScriptWithArgs(spell_gen_mount, "spell_blazing_hippogryph", 0, 0, 0, SPELL_BLAZING_HIPPOGRYPH_150, SPELL_BLAZING_HIPPOGRYPH_280, 0);
     RegisterSpellScriptWithArgs(spell_gen_mount, "spell_celestial_steed", 0, SPELL_CELESTIAL_STEED_60, SPELL_CELESTIAL_STEED_100, SPELL_CELESTIAL_STEED_150, SPELL_CELESTIAL_STEED_280, SPELL_CELESTIAL_STEED_310);
+    RegisterSpellScriptWithArgs(spell_gen_mount, "spell_miaomount", 0, SPELL_MIAOMOUNT_60, SPELL_MIAOMOUNT_100, SPELL_MIAOMOUNT_150, SPELL_MIAOMOUNT_280, SPELL_MIAOMOUNT_310);
     RegisterSpellScriptWithArgs(spell_gen_mount, "spell_x53_touring_rocket", 0, 0, 0, SPELL_X53_TOURING_ROCKET_150, SPELL_X53_TOURING_ROCKET_280, SPELL_X53_TOURING_ROCKET_310);
     RegisterSpellScript(spell_gen_upper_deck_create_foam_sword);
     RegisterSpellScript(spell_gen_bonked);

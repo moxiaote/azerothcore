@@ -456,6 +456,7 @@ struct npc_pet_gen_valkyr_guardian : public ScriptedAI
             if (Unit* target = owner->GetSelectedUnit())
                 if (!owner->IsFriendlyTo(target))
                     AttackStart(target);
+        me->AddAura(68595,me);//瓦格里增加75%范围免伤
     }
 
     void OwnerAttacked(Unit* target) override

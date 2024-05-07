@@ -714,6 +714,21 @@ public:
                         m_hodirHardmodeChest.Clear();
                     }
                     break;
+                case TYPE_HODIR_HM_RESET:
+                    if (GameObject* go = instance->GetGameObject(m_hodirHardmodeChest))
+                    {
+                        LOG_ERROR("module", "发现宝箱未损坏,跳过");
+                        break;
+                    }
+                    if (m_auiEncounter[TYPE_HODIR] != DONE)
+                    {
+                        if (Creature* hodir = instance->GetCreature(m_uiHodirGUID))
+                        {
+                            LOG_ERROR("module", "发现宝箱损坏,重新召唤");
+                            SpawnHodirChests(instance->GetDifficulty(), hodir);
+                        }
+                    }
+                    break;
                 case TYPE_WATCHERS:
                     m_auiEncounter[type] |= 1 << data;
                     break;
@@ -787,18 +802,6 @@ public:
                         go->SetGoState(data == IN_PROGRESS ? GO_STATE_ACTIVE : GO_STATE_READY);
                         go->EnableCollision(false);
                     }
-
-                    if (data == FAIL)
-                    {
-                        scheduler.Schedule(5s, [this](TaskContext)
-                        {
-                            if (m_algalonTimer && (m_algalonTimer <= 60 || m_algalonTimer == TIMER_ALGALON_TO_SUMMON))
-                            {
-                                instance->SummonCreature(NPC_ALGALON, AlgalonLandPos);
-                            }
-                        });
-                    }
-
                     break;
 
                 // Achievement
@@ -819,7 +822,7 @@ public:
                 case DATA_BRANN_MEMOTESAY:
                     if (Creature* cr = instance->GetCreature(m_brannBronzebeardBaseCamp))
                     {
-                        cr->TextEmote("Go to your vehicles!", nullptr, true);
+                        cr->TextEmote("找到你的战车!", nullptr, true);
                     }
                     break;
                 case DATA_BRANN_EASY_MODE:
@@ -1122,8 +1125,6 @@ public:
 
         void Update(uint32 diff) override
         {
-            InstanceScript::Update(diff);
-
             if (_events.Empty())
                 return;
 
@@ -1141,6 +1142,36 @@ public:
                     if (m_algalonTimer)
                     {
                         _events.Repeat(1min);
+
+                        if (Creature* algalon = instance->GetCreature(m_uiAlgalonGUID))
+                        {
+                            LOG_ERROR("module", "奥尔加隆存活,跳过召唤");
+                        }
+                        else
+                        {
+                            if (m_algalonTimer && (m_algalonTimer <= 60 || m_algalonTimer == TIMER_ALGALON_TO_SUMMON))
+                            {
+                                TempSummon* algalon = instance->SummonCreature(NPC_ALGALON, AlgalonLandPos);
+                                LOG_ERROR("module", "奥尔加隆召唤完成");
+                                if (!algalon)
+                                    return;
+
+                                if (m_algalonTimer <= 60)
+                                {
+                                    _events.RescheduleEvent(EVENT_UPDATE_ALGALON_TIMER, 60000);
+                                    algalon->AI()->DoAction(ACTION_INIT_ALGALON);
+                                }
+                                else // if (m_algalonTimer = TIMER_ALGALON_TO_SUMMON)
+                                {
+                                    m_algalonTimer = TIMER_ALGALON_SUMMONED;
+                                    algalon->SetImmuneToPC(false);
+                                }
+                            }
+                            else
+                            {
+                                LOG_ERROR("module", "奥尔加隆挑战超时,跳过召唤");
+                            }
+                        }
                         return;
                     }
 

@@ -718,8 +718,23 @@ public:
             }
         }
 
+        bool IsInRoom(Unit* who)
+        {
+            if (who->GetPositionX() > 2520 || who->GetPositionX() < 2086 || who->GetPositionY() > 180 || who->GetPositionY() < -210)
+            {
+                if (who->GetGUID() == me->GetGUID())
+                    EnterEvadeMode();
+
+                return false;
+            }
+            return true;
+        }
+
         void UpdateAI(uint32 diff) override
         {
+            if (!IsInRoom(me))
+                return;
+
             if (!UpdateVictim())
                 return;
 
@@ -805,8 +820,23 @@ public:
                 Talk(SAY_ELDER_AGGRO);
         }
 
+        bool IsInRoom(Unit* who)
+        {
+            if (who->GetPositionX() > 2520 || who->GetPositionX() < 2086 || who->GetPositionY() > 180 || who->GetPositionY() < -210)
+            {
+                if (who->GetGUID() == me->GetGUID())
+                    EnterEvadeMode();
+
+                return false;
+            }
+            return true;
+        }
+
         void UpdateAI(uint32 diff) override
         {
+            if (!IsInRoom(me))
+                return;
+
             if (!UpdateVictim())
                 return;
 
@@ -916,8 +946,23 @@ public:
                 Talk(SAY_ELDER_AGGRO);
         }
 
+        bool IsInRoom(Unit* who)
+        {
+            if (who->GetPositionX() > 2520 || who->GetPositionX() < 2086 || who->GetPositionY() > 180 || who->GetPositionY() < -210)
+            {
+                if (who->GetGUID() == me->GetGUID())
+                    EnterEvadeMode();
+
+                return false;
+            }
+            return true;
+        }
+
         void UpdateAI(uint32 diff) override
         {
+            if (!IsInRoom(me))
+                return;
+
             if (!UpdateVictim())
                 return;
 
