@@ -1196,12 +1196,7 @@ public:
         {
             if (InstanceScript *instance = player->GetInstanceScript())
             {
-                bool AreAllWingsCleared = instance->GetBossState(BOSS_MAEXXNA) == DONE
-                    && (instance->GetBossState(BOSS_LOATHEB) == DONE)
-                    && (instance->GetBossState(BOSS_THADDIUS) == DONE)
-                    && (instance->GetBossState(BOSS_HORSEMAN) == DONE);
-
-                if (AreAllWingsCleared)
+                if (instance->CheckRequiredBosses(BOSS_SAPPHIRON))
                 {
                     player->TeleportTo(533, sapphironEntryTP.m_positionX, sapphironEntryTP.m_positionY, sapphironEntryTP.m_positionZ, sapphironEntryTP.m_orientation);
                     return true;
