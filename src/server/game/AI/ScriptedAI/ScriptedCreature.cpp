@@ -650,16 +650,6 @@ void BossAI::_JustEngagedWith()
     }
 }
 
-void BossAI::_EnterEvadeMode(EvadeReason why)
-{
-    CreatureAI::EnterEvadeMode(why);
-    if (instance)
-    {
-        instance->SetBossState(_bossId, NOT_STARTED);
-        instance->SaveToDB();
-    }
-}
-
 void BossAI::TeleportCheaters()
 {
     float x, y, z;
