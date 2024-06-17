@@ -281,6 +281,9 @@ public:
             if (type != EFFECT_MOTION_TYPE && type != POINT_MOTION_TYPE)
                 return;
 
+            if (!me->IsAlive())//空中击杀停止执行
+                return;
+
             switch (id)
             {
                 case POINT_CENTER:

@@ -2318,8 +2318,8 @@ namespace lfg
                 if (player->HasTankSpec() or player->HasHealSpec())
                 {
                     player->AddItem(54218, 1);//T/N奖励额外兰德鲁的礼物盒
-                    player->AddItem(45624, 1);//T/N奖励额外征服纹章
-                    player->SendSystemMessage("坦克奶妈额外奖励已发放-兰德鲁的礼物盒*1-征服纹章*1");
+                    player->AddItem(49426, 1);//T/N奖励额外寒冰纹章
+                    player->SendSystemMessage("坦克奶妈额外奖励已发放-兰德鲁的礼物盒*1-寒冰纹章*1");
                 }
                 player->RewardQuest(quest, 0, nullptr, false, true);
             }
@@ -2332,8 +2332,8 @@ namespace lfg
                 // we give reward without informing client (retail does this)
                 if (player->HasTankSpec() or player->HasHealSpec())
                 {
-                    player->AddItem(40753, 2);//T/N奖励额外牌子
-                    player->SendSystemMessage("坦克奶妈额外奖励已发放-勇气纹章*2");
+                    player->AddItem(47241, 2);//T/N奖励额外牌子
+                    player->SendSystemMessage("坦克奶妈额外奖励已发放-凯旋纹章*2");
                 }
                 player->RewardQuest(quest, 0, nullptr, false, true);
             }

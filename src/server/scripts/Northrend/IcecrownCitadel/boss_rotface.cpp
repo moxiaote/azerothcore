@@ -222,6 +222,7 @@ public:
 
         void EnterEvadeMode(EvadeReason why) override
         {
+            instance->SetBossState(DATA_ROTFACE, FAIL);//修复灭团不重置
             me->SetControlled(false, UNIT_STATE_ROOT);
             me->DisableRotate(false);
             ScriptedAI::EnterEvadeMode(why);
