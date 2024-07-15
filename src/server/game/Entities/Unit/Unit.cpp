@@ -3051,8 +3051,11 @@ void Unit::SendMeleeAttackStop(Unit* victim)
 
     WorldPacket data(SMSG_ATTACKSTOP, (8 + 8 + 4));
     data << GetPackGUID();
-    data << (victim ? victim->GetPackGUID() : PackedGuid());
-    data << uint32(0);                                     //! Can also take the value 0x01, which seems related to updating rotation
+    if (victim)
+    {
+        data << victim->GetPackGUID();
+        data << victim->isDead();
+    }
     SendMessageToSet(&data, true);
     LOG_DEBUG("entities.unit", "WORLD: Sent SMSG_ATTACKSTOP");
 
@@ -9690,30 +9693,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
             {
                 if (!procSpell || procSpell->PowerType != POWER_MANA || (procSpell->ManaCost == 0 && procSpell->ManaCostPercentage == 0 && procSpell->ManaCostPerlevel == 0))
                     return false;
-                break;
-            }
-        // Demonic Pact
-        case 48090:
-            {
-                // Get talent aura from owner
-                if (IsPet())
-                    if (Unit* owner = GetOwner())
-                    {
-                        if (HasSpellCooldown(trigger_spell_id))
-                            return false;
-                        AddSpellCooldown(trigger_spell_id, 0, cooldown);
-
-                        if (AuraEffect* aurEff = owner->GetDummyAuraEffect(SPELLFAMILY_WARLOCK, 3220, 0))
-                        {
-                            int32 spellPower = owner->SpellBaseDamageBonusDone(SpellSchoolMask(SPELL_SCHOOL_MASK_MAGIC));
-                            if (AuraEffect const* demonicAuraEffect = GetAuraEffect(trigger_spell_id, EFFECT_0))
-                                spellPower -= demonicAuraEffect->GetAmount();
-
-                            basepoints0 = int32((aurEff->GetAmount() * spellPower + 100.0f) / 100.0f);
-                            CastCustomSpell(this, trigger_spell_id, &basepoints0, &basepoints0, nullptr, true, castItem, triggeredByAura);
-                            return true;
-                        }
-                    }
                 break;
             }
         case 46916:  // Slam! (Bloodsurge proc)
