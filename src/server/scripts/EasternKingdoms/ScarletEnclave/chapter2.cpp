@@ -77,7 +77,7 @@ public:
 
         void SpellHit(Unit* caster, SpellInfo const* spell) override
         {
-            if (spell->Id == SPELL_PERSUASIVE_STRIKE && caster->GetTypeId() == TYPEID_PLAYER && me->IsAlive() && !speechCounter)
+            if (spell->Id == SPELL_PERSUASIVE_STRIKE && caster->IsPlayer() && me->IsAlive() && !speechCounter)
             {
                 if (Player* player = caster->ToPlayer())
                 {
@@ -624,7 +624,8 @@ public:
             ExecuteSpeech_Counter = 0;
             PlayerGUID.Clear();
 
-            me->SetImmuneToPC(false);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetImmuneToPC(true);
         }
 
         bool MeetQuestCondition(Player* player)
@@ -679,7 +680,7 @@ public:
         void MoveInLineOfSight(Unit* who) override
 
         {
-            if (PlayerGUID || who->GetTypeId() != TYPEID_PLAYER || !who->IsWithinDist(me, INTERACTION_DISTANCE))
+            if (PlayerGUID || !who->IsPlayer() || !who->IsWithinDist(me, INTERACTION_DISTANCE))
                 return;
 
             if (MeetQuestCondition(who->ToPlayer()))
@@ -735,6 +736,7 @@ public:
                     case 9:
                         Talk(SAY_EXEC_TIME, player);
                         me->SetStandState(UNIT_STAND_STATE_KNEEL);
+                        me->SetReactState(REACT_PASSIVE);
                         me->SetImmuneToPC(false);
                         break;
                     case 10:
