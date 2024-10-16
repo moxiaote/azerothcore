@@ -1054,8 +1054,8 @@ void Group::GroupLoot(Loot* loot, WorldObject* pLootedObject)
                 if (item->DisenchantID && m_maxEnchantingLevel >= item->RequiredDisenchantSkill)
                     r->rollVoteMask |= ROLL_FLAG_TYPE_DISENCHANT;
 
-                if (item->Bonding & BIND_WHEN_EQUIPED)
-                    if (!(item->Flags2 & ITEM_FLAGS_EXTRA_NEED_ROLL_DISABLED))
+                if (item->Bonding & BIND_WHEN_EQUIPPED)
+                    if (!(item->Flags2 & ITEM_FLAG2_CAN_ONLY_ROLL_GREED))
                         r->rollVoteMask &= ~ROLL_FLAG_TYPE_NEED;
 
                 loot->items[itemSlot].is_blocked = true;
@@ -1209,7 +1209,7 @@ void Group::NeedBeforeGreed(Loot* loot, WorldObject* lootedObject)
                 if (item->HasFlag2(ITEM_FLAG2_CAN_ONLY_ROLL_GREED))
                     r->rollVoteMask &= ~ROLL_FLAG_TYPE_NEED;
 
-                if (item->Bonding & BIND_WHEN_EQUIPED)
+                if (item->Bonding & BIND_WHEN_EQUIPPED)
                     r->rollVoteMask &= ~ROLL_FLAG_TYPE_NEED;
 
                 loot->items[itemSlot].is_blocked = true;
