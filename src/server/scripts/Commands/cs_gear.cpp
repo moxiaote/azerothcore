@@ -18,7 +18,6 @@
 #include "Chat.h"
 #include "CommandScript.h"
 #include "Language.h"
-#include "Log.h"
 #include "Player.h"
 #include "WorldSession.h"
 
@@ -69,11 +68,11 @@ public:
 
         std::string nameLink = handler->playerLink(target->GetName());
 
-        handler->PSendSysMessage(LANG_YOU_REPAIR_ITEMS, nameLink.c_str());
+        handler->PSendSysMessage(LANG_YOU_REPAIR_ITEMS, nameLink);
 
         if (handler->needReportToTarget(target->GetConnectedPlayer()))
         {
-            ChatHandler(target->GetConnectedPlayer()->GetSession()).PSendSysMessage(LANG_YOUR_ITEMS_REPAIRED, nameLink.c_str());
+            ChatHandler(target->GetConnectedPlayer()->GetSession()).PSendSysMessage(LANG_YOUR_ITEMS_REPAIRED, nameLink);
         }
 
         return true;
@@ -111,11 +110,11 @@ public:
                 uint32 SpellPower = fields[8].Get<uint32>();
                 uint32 Resilience = fields[9].Get<uint32>();
 
-                handler->PSendSysMessage("Health: |cff00ffff%u|r - Stamina: |cff00ffff%u|r", MaxHealth, Stamina);
-                handler->PSendSysMessage("Strength: |cff00ffff%u|r - Agility: |cff00ffff%u|r", Strength, Agility);
-                handler->PSendSysMessage("Intellect: |cff00ffff%u|r - Spirit: |cff00ffff%u|r", Intellect, Spirit);
-                handler->PSendSysMessage("AttackPower: |cff00ffff%u|r - SpellPower: |cff00ffff%u|r", AttackPower, SpellPower);
-                handler->PSendSysMessage("Armor: |cff00ffff%u|r - Resilience: |cff00ffff%u|r", Armor, Resilience);
+                handler->PSendSysMessage("Health: |cff00ffff{}|r - Stamina: |cff00ffff{}|r", MaxHealth, Stamina);
+                handler->PSendSysMessage("Strength: |cff00ffff{}|r - Agility: |cff00ffff{}|r", Strength, Agility);
+                handler->PSendSysMessage("Intellect: |cff00ffff{}|r - Spirit: |cff00ffff{}|r", Intellect, Spirit);
+                handler->PSendSysMessage("AttackPower: |cff00ffff{}|r - SpellPower: |cff00ffff{}|r", AttackPower, SpellPower);
+                handler->PSendSysMessage("Armor: |cff00ffff{}|r - Resilience: |cff00ffff{}|r", Armor, Resilience);
             }
         }
 

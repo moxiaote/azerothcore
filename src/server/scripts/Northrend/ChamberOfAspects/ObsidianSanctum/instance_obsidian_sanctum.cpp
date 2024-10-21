@@ -49,7 +49,7 @@ public:
 
         void OnCreatureCreate(Creature* pCreature) override
         {
-            switch(pCreature->GetEntry())
+            switch (pCreature->GetEntry())
             {
                 case NPC_SARTHARION:
                     m_uiSartharionGUID = pCreature->GetGUID();
@@ -68,7 +68,7 @@ public:
 
         ObjectGuid GetGuidData(uint32 uiData) const override
         {
-            switch(uiData)
+            switch (uiData)
             {
                 case DATA_SARTHARION:
                     return m_uiSartharionGUID;
@@ -85,7 +85,7 @@ public:
 
         bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* source, Unit const*  /*target*/, uint32  /*miscvalue1*/) override
         {
-            switch(criteria_id)
+            switch (criteria_id)
             {
                 // Gonna Go When the Volcano Blows (10 player) (2047)
                 case 7326:
@@ -195,4 +195,3 @@ void AddSC_instance_obsidian_sanctum()
 {
     new instance_obsidian_sanctum();
 }
-

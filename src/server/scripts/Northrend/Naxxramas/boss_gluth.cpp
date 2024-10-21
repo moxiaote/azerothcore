@@ -141,7 +141,7 @@ public:
             {
                 me->ModifyHealth(int32(me->GetMaxHealth() * 0.05f));
             }
-            if (who->GetTypeId() == TYPEID_PLAYER && pInstance)
+            if (who->IsPlayer() && pInstance)
             {
                 pInstance->SetData(DATA_IMMORTAL_FAIL, 0);
             }
@@ -175,7 +175,7 @@ public:
                 return false;
 
             Map::PlayerList const& pList = me->GetMap()->GetPlayers();
-            for (const auto& itr : pList)
+            for (auto const& itr : pList)
             {
                 Player* player = itr.GetSource();
                 if (!player || !player->IsAlive())
@@ -298,4 +298,3 @@ void AddSC_boss_gluth()
     new boss_gluth();
     RegisterSpellScript(spell_gluth_decimate);
 }
-
