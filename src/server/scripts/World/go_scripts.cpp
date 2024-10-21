@@ -26,7 +26,6 @@
 #include "ScriptedCreature.h"
 #include "ScriptedGossip.h"
 #include "Spell.h"
-#include "WorldSession.h"
 
 // Ours
 /*######
@@ -1513,7 +1512,7 @@ public:
                 return true;
             }
 
-            if (owner->GetTypeId() != TYPEID_PLAYER || !player->IsInSameRaidWith(owner->ToPlayer()))
+            if (!owner->IsPlayer() || !player->IsInSameRaidWith(owner->ToPlayer()))
             {
                 if (SpellInfo const* spell = sSpellMgr->GetSpellInfo(stoneSpell))
                 {
@@ -1991,4 +1990,3 @@ void AddSC_go_scripts()
     new go_veil_skith_cage();
     new go_bells();
 }
-
