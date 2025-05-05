@@ -19,6 +19,7 @@
 #include "InstanceMapScript.h"
 #include "InstanceScript.h"
 #include "Player.h"
+#include "WorldStateDefines.h"
 #include "hyjal.h"
 
 /* Battle of Mount Hyjal encounters:
@@ -92,8 +93,9 @@ public:
         {
             _bossWave = TO_BE_DECIDED;
             _retreat = 0;
-            trash = 0;
+            _trash = 0;
             _currentWave = 0;
+            _initialWaves = false;
             _encounterNPCs.clear();
             _summonedNPCs.clear();
             _baseAlliance.clear();
@@ -190,9 +192,9 @@ public:
 
                     if (creature->IsSummon() && _bossWave != TO_BE_DECIDED)
                     {
-                        if (_currentWave == 0)
-                            creature->SetDisableReputationGain(true);
-                        DoUpdateWorldState(WORLD_STATE_ENEMYCOUNT, ++trash);    // Update the instance wave count on new trash spawn
+                        if (_currentWave == 0 && _initialWaves)
+                            creature->SetReputationRewardDisabled(true);
+                        DoUpdateWorldState(WORLD_STATE_HYJAL_ENEMY_COUNT, ++_trash);    // Update the instance wave count on new trash spawn
                         _encounterNPCs.insert(creature->GetGUID());             // Used for despawning on wipe
                     }
                     break;
@@ -230,10 +232,10 @@ public:
                         {
                             if (_bossWave != TO_BE_DECIDED)
                             {
-                                DoUpdateWorldState(WORLD_STATE_ENEMYCOUNT, --trash);    // Update the instance wave count on new trash death
+                                DoUpdateWorldState(WORLD_STATE_HYJAL_ENEMY_COUNT, --_trash);    // Update the instance wave count on new trash death
                                 _encounterNPCs.erase(creature->GetGUID());    // Used for despawning on wipe
 
-                                if (trash == 0) // It can reach negatives if trash spawned after a retreat are killed, it shouldn't affect anything. Also happens on retail
+                                if (_trash == 0) // It can reach negatives if trash spawned after a retreat are killed, it shouldn't affect anything. Also happens on retail
                                     SetData(DATA_SPAWN_WAVES, 1);
                             }
                         }
@@ -245,14 +247,12 @@ public:
                         _summonedNPCs.erase(creature->GetGUID());
                         break;
                     case NPC_WINTERCHILL:
+                        _initialWaves = false;
+                        [[fallthrough]];
                     case NPC_ANETHERON:
                     case NPC_KAZROGAL:
                     case NPC_AZGALOR:
-                        if (Creature* jaina = GetCreature(DATA_JAINA))
-                            jaina->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                        if (Creature* thrall = GetCreature(DATA_THRALL))
-                            thrall->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                        SetData(DATA_RESET_WAVES, 1);
+                        ResetWaves();
                         break;
                 }
             }
@@ -364,6 +364,7 @@ public:
                     _retreat = 0;
                     if (GetBossState(DATA_WINTERCHILL) != DONE)
                     {
+                        _initialWaves = true;
                         if (_bossWave == TO_BE_DECIDED)
                             for (ObjectGuid const& guid : _baseAlliance)
                                 if (Creature* creature = instance->GetCreature(guid))
@@ -406,7 +407,7 @@ public:
 
                     if (_bossWave != TO_BE_DECIDED)
                     {
-                        DoUpdateWorldState(WORLD_STATE_WAVES, 0);
+                        DoUpdateWorldState(WORLD_STATE_HYJAL_WAVES, 0);
                         scheduler.Schedule(30s, [this](TaskContext context)
                         {
                             if (IsEncounterInProgress())
@@ -481,16 +482,19 @@ public:
                     SetData(DATA_RESET_WAVES, 0);
                     break;
                 case DATA_RESET_WAVES:
+                    if (GetBossState(DATA_WINTERCHILL) != DONE)
+                        _initialWaves = true;
+
                     scheduler.CancelGroup(CONTEXT_GROUP_WAVES);
                     _encounterNPCs.clear();
                     _summonedNPCs.clear();
                     _currentWave = 0;
-                    trash = 0;
+                    _trash = 0;
                     _bossWave = TO_BE_DECIDED;
                     _retreat = 0;
-                    DoUpdateWorldState(WORLD_STATE_WAVES, _currentWave);
-                    DoUpdateWorldState(WORLD_STATE_ENEMY, trash);
-                    DoUpdateWorldState(WORLD_STATE_ENEMYCOUNT, trash);
+                    DoUpdateWorldState(WORLD_STATE_HYJAL_WAVES, _currentWave);
+                    DoUpdateWorldState(WORLD_STATE_HYJAL_ENEMY, _trash);
+                    DoUpdateWorldState(WORLD_STATE_HYJAL_ENEMY_COUNT, _trash);
                     break;
             }
 
@@ -517,7 +521,7 @@ public:
         {
             // No overlapping!
             scheduler.CancelGroup(CONTEXT_GROUP_WAVES);
-            trash = 0;    // Reset counter here to avoid resetting the counter from scheduled waves. Required because creatures killed for RP events counts towards the kill counter as well, confirmed in Retail.
+            _trash = 0;    // Reset counter here to avoid resetting the counter from scheduled waves. Required because creatures killed for RP events counts towards the kill counter as well, confirmed in Retail.
 
             scheduler.Schedule(1ms, [this, startWaves, maxWaves, timerptr](TaskContext context)
                 {
@@ -545,8 +549,8 @@ public:
                     context.Repeat(timerptr[_currentWave]);
                     if (++_currentWave < maxWaves && _bossWave != TO_BE_DECIDED)
                     {
-                        DoUpdateWorldState(WORLD_STATE_WAVES, _currentWave);
-                        DoUpdateWorldState(WORLD_STATE_ENEMY, 1);
+                        DoUpdateWorldState(WORLD_STATE_HYJAL_WAVES, _currentWave);
+                        DoUpdateWorldState(WORLD_STATE_HYJAL_ENEMY, 1);
                     }
 
                     context.SetGroup(CONTEXT_GROUP_WAVES);
@@ -566,8 +570,8 @@ public:
             }
         }
 
-    protected:
-        int32 trash;
+    private:
+        int32 _trash;
         uint8 _currentWave;
         uint8 _bossWave;
         uint8 _retreat;
@@ -581,6 +585,16 @@ public:
         GuidSet _ancientGemHorde;
         GuidSet _roaringFlameAlliance;
         GuidSet _roaringFlameHorde;
+        bool _initialWaves;
+
+        void ResetWaves()
+        {
+            if (Creature* jaina = GetCreature(DATA_JAINA))
+                jaina->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+            if (Creature* thrall = GetCreature(DATA_THRALL))
+                thrall->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+            SetData(DATA_RESET_WAVES, 1);
+        }
     };
 };
 
