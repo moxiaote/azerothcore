@@ -7205,16 +7205,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
         case SPELLFAMILY_WARRIOR:
             {
-                switch (dummySpell->Id)
-                {
-                    // Victorious
-                    case 32216:
-                        {
-                            RemoveAura(dummySpell->Id);
-                            return false;
-                        }
-                }
-
                 // Second Wind
                 if (dummySpell->SpellIconID == 1697)
                 {
@@ -13730,7 +13720,7 @@ void Unit::CombatStart(Unit* victim, bool initialAggro)
         victim->SetInCombatWith(this);
 
         // Update leash timer when attacking creatures
-        if (victim->IsCreature())
+        if (victim->IsCreature() && this != victim)
             victim->ToCreature()->UpdateLeashExtensionTime();
 
         // Xinef: If pet started combat - put owner in combat

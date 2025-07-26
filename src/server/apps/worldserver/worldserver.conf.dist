@@ -1293,7 +1293,7 @@ Visibility.GroupMode = 1
 #        Description: Visibility distance to see other players or gameobjects.
 #                     Visibility on continents on retail ~100 yards. In BG/Arenas ~250.
 #                     For instances default ~170.
-#                     Max limited by active player zone: ~ 333
+#                     Max: 250
 #                     Min limit is max aggro radius (45) * Rate.Creature.Aggro
 #        Default:     100  - (Visibility.Distance.Continents)
 #                     170 - (Visibility.Distance.Instances)
@@ -1418,18 +1418,6 @@ CheckGameObjectLoS = 1
 #                     1 - (Enabled)
 
 PreloadAllNonInstancedMapGrids = 0
-
-#
-#    SetAllCreaturesWithWaypointMovementActive
-#        Description: Set all creatures with waypoint movement active. This means that they will start
-#                     movement once they are loaded (which happens on grid load) and keep moving even
-#                     when no player is near. This will increase CPU usage significantly and can be
-#                     used with enabled "PreloadAllNonInstancedMapGrids" to start waypoint movement on
-#                     server startup.
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
-
-SetAllCreaturesWithWaypointMovementActive = 0
 
 #
 #     DontCacheRandomMovementPaths
@@ -3514,6 +3502,14 @@ Wintergrasp.CrashRestartTimer = 10
 ###################################################################################################
 # BATTLEGROUND
 #
+#    Battleground.PrepTime
+#        Description: Time (in seconds) for battleground preparation phase. Strand of the Ancients will be
+#        the exception and will always use the default 120 seconds timer, due to its boat timing mechanic.
+#        Default:     120
+
+Battleground.PrepTime = 120
+
+#
 #    Battleground.CastDeserter
 #        Description: Cast Deserter spell at players who leave battlegrounds in progress.
 #        Default:     1 - (Enabled)
@@ -3779,6 +3775,13 @@ Battleground.EyeOfTheStorm.CapturePoints = 1600
 ###################################################################################################
 # ARENA
 #
+#    Arena.PrepTime
+#        Description: Time (in seconds) for arena preparation phase.
+#        Default:     60
+
+Arena.PrepTime = 60
+
+#
 #    Arena.MaxRatingDifference
 #        Description: Maximum rating difference between two teams in rated matches.
 #        Default:     150 - (Enabled)
@@ -3856,10 +3859,17 @@ Arena.QueueAnnouncer.Detail = 3
 
 #
 #    Arena.ArenaStartRating
-#        Description: Start rating for new arena teams.
+#        Description: Start rating for new arena teams. (Applies to season 6 and higher)
 #        Default:     0
 
 Arena.ArenaStartRating = 0
+
+#
+#    Arena.LegacyArenaStartRating
+#        Description: Start rating for new arena teams. (Only applies to season 1 - 5)
+#        Default:     1500
+
+Arena.LegacyArenaStartRating = 1500
 
 #
 #    Arena.ArenaStartPersonalRating
@@ -4460,7 +4470,8 @@ Minigob.Manabonk.Enable = 1
 
 #
 #     Calculate.Creature.Zone.Area.Data
-#        Description: Calculate at loading creature zoneId / areaId and save in creature table (WARNING: SLOW WORLD SERVER STARTUP)
+#        Description: Calculate at loading creature zoneId / areaId and save in creature table
+#                     WARNING: SLOW WORLD SERVER STARTUP. Should only be used for debugging.
 #        Default:     0  - (Do not show)
 #
 
@@ -4468,7 +4479,8 @@ Calculate.Creature.Zone.Area.Data = 0
 
 #
 #     Calculate.Gameoject.Zone.Area.Data
-#        Description: Calculate at loading gameobject zoneId / areaId and save in gameobject table (WARNING: SLOW WORLD SERVER STARTUP)
+#        Description: Calculate at loading gameobject zoneId / areaId and save in gameobject table
+#                     WARNING: SLOW WORLD SERVER STARTUP. Should only be used for debugging.
 #        Default:     0  - (Do not show)
 #
 
