@@ -174,7 +174,7 @@ struct npc_pet_dk_ebon_gargoyle : ScriptedAI
             std::list<Unit*> targets;
             Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 50.0f);
             Acore::UnitListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
-            Cell::VisitAllObjects(me, searcher, 50.0f);
+            Cell::VisitObjects(me, searcher, 50.0f);
             for (auto const& target : targets)
                 if (target->GetAura(SPELL_DK_SUMMON_GARGOYLE_1, me->GetOwnerGUID()))
                 {
@@ -244,6 +244,20 @@ private:
 struct npc_pet_dk_ghoul : public CombatAI
 {
     npc_pet_dk_ghoul(Creature* c) : CombatAI(c) { }
+
+    void IsSummonedBy(WorldObject* summoner) override
+    {
+        if (!summoner || !summoner->IsPlayer())
+            return;
+
+        Player* player = summoner->ToPlayer();
+
+        if (Unit* victim = player->GetVictim())
+        {
+            me->Attack(victim, true);
+            me->GetMotionMaster()->MoveChase(victim);
+        }
+    }
 
     void JustDied(Unit* /*who*/) override
     {
